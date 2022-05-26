@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { bloodType, BloodType, User } from "./user";
 import { useForm } from "@/ui/form/use-form";
@@ -32,20 +33,29 @@ export const useUserForm: UseUserForm = (props) => {
       defaultValues: props?.defaultValues ?? defaultValues,
       mode: "all",
     }),
-    getUserField: (props) => ({
-      name: props.name,
-      tel: String(props.tel),
-      bloodType: props.bloodType === null ? "" : props.bloodType,
-    }),
-    getUser: (props) => ({
-      name: props.name,
-      tel: props.tel,
-      bloodType: props.bloodType,
-    }),
-    isValidUserField: (props): props is ValidUserField =>
-      props.name !== "" &&
-      !Number.isNaN(parseInt(props.tel)) &&
-      (props.bloodType === "" ||
-        Object.values(bloodType).some((v) => props.bloodType === v)),
+    getUserField: useCallback(
+      (props) => ({
+        name: props.name,
+        tel: String(props.tel),
+        bloodType: props.bloodType === null ? "" : props.bloodType,
+      }),
+      []
+    ),
+    getUser: useCallback(
+      (props) => ({
+        name: props.name,
+        tel: props.tel,
+        bloodType: props.bloodType,
+      }),
+      []
+    ),
+    isValidUserField: useCallback(
+      (props): props is ValidUserField =>
+        props.name !== "" &&
+        !Number.isNaN(parseInt(props.tel)) &&
+        (props.bloodType === "" ||
+          Object.values(bloodType).some((v) => props.bloodType === v)),
+      []
+    ),
   };
 };

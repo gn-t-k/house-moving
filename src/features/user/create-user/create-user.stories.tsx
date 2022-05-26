@@ -4,6 +4,7 @@ import { userEvent } from "@storybook/testing-library";
 import { within } from "@storybook/testing-library";
 import { ComponentProps } from "react";
 import { CreateUserView } from "./create-user";
+import { Result } from "@/util/result";
 
 type Meta = ComponentMeta<typeof CreateUserView>;
 type Props = ComponentProps<typeof CreateUserView>;
@@ -14,9 +15,13 @@ const componentMeta: Meta = {
 };
 export default componentMeta;
 
-const dummyCreateUser = () => {
+const dummyCreateUser = (): Promise<Result<void>> => {
   action("create user");
-  return Promise.resolve();
+
+  return Promise.resolve({
+    isSuccess: true,
+    data: undefined,
+  });
 };
 
 const Template: Story = {

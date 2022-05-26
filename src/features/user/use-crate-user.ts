@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { User } from "./user";
 import {
   createUser,
@@ -9,5 +10,8 @@ type UseCreateUser = () => {
   createUser: (user: User) => Promise<Result<void>>;
 };
 export const useCreateUser: UseCreateUser = () => ({
-  createUser: async (props) => await createUser(getRequestParams(props)),
+  createUser: useCallback(
+    async (props) => await createUser(getRequestParams(props)),
+    []
+  ),
 });
