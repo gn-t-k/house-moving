@@ -1,17 +1,16 @@
 import { addDoc, collection } from "firebase/firestore";
+import { Users as FirestoreUsers } from "../collection/users";
 import { User } from "@/features/user/user";
-import { firestore } from "@/libs/firebase/firestore";
+import { firestore } from "@/libs/firebase/firestore/instance";
 import { Convert } from "@/util/convert";
 import { Result } from "@/util/result";
 
-type CreateUser = (requestParams: {
-  name: string;
-  tel: string;
-  bloodType: string;
-}) => Promise<Result<void>>;
-export const createUser: CreateUser = async (props) => {
+type AddToUsersCollection = (
+  requestParams: FirestoreUsers
+) => Promise<Result<{ id: string }>>;
+export const addToUsersCollection: AddToUsersCollection = async (props) => {
   try {
-    await addDoc(collection(firestore, "tests"), {
+    const userDocRef = await addDoc(collection(firestore, "users"), {
       name: props.name,
       tel: props.tel,
       bloodType: props.bloodType,
@@ -19,7 +18,9 @@ export const createUser: CreateUser = async (props) => {
 
     return {
       isSuccess: true,
-      data: undefined,
+      data: {
+        id: userDocRef.id,
+      },
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : "internal error";
@@ -33,8 +34,8 @@ export const createUser: CreateUser = async (props) => {
   }
 };
 
-type GetRequestParams = Convert<User, Parameters<CreateUser>[0]>;
-export const getRequestParams: GetRequestParams = (props: User) => ({
+type GetRequestParams = Convert<User, FirestoreUsers>;
+export const getRequestParams: GetRequestParams = (props) => ({
   name: props.name,
   tel: props.tel,
   bloodType: props.bloodType === null ? "" : props.bloodType,

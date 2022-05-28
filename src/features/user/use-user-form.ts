@@ -43,6 +43,7 @@ export const useUserForm: UseUserForm = (props) => {
     ),
     getUser: useCallback(
       (props) => ({
+        identified: false,
         name: props.name,
         tel: props.tel,
         bloodType: props.bloodType,

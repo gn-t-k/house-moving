@@ -5,47 +5,58 @@ import {
   Input,
   FormErrorMessage,
   Select,
+  Text,
+  useToast,
 } from "@chakra-ui/react";
 import { FC } from "react";
-import { useCreateUser } from "../use-crate-user";
+import { CreateUser } from "../use-crate-user";
 import { useUserForm } from "../use-user-form";
-import { bloodType, User } from "../user";
-import { Result } from "@/util/result";
+import { bloodType } from "../user";
 
-export const CreateUser: FC = () => {
-  const { createUser } = useCreateUser();
-
-  return <CreateUserView onClick={createUser} />;
-};
-
-export const CreateUserView: FC<{
-  onClick: (user: User) => Promise<Result<void>>;
+export const CreateUserForm: FC<{
+  createUser: CreateUser;
 }> = (props) => {
   const {
     useFormReturn: { register, formState, handleSubmit, getValues },
     getUser,
     isValidUserField,
   } = useUserForm();
+  const toast = useToast();
 
   const onSubmit = handleSubmit(async () => {
     const userField = getValues();
 
     if (isValidUserField(userField)) {
-      const result = await props.onClick(getUser(userField));
+      const result = await props.createUser(getUser(userField));
 
       if (result.isSuccess) {
-        console.info(result);
+        toast({
+          title: "success",
+          description: `user created: ${result.data.value}`,
+          status: "success",
+        });
       } else {
-        console.error(result.failure.message);
+        toast({
+          title: "failure",
+          description: `create user failed: ${result.failure.message}`,
+          status: "error",
+        });
       }
+    } else {
+      toast({
+        title: "failure",
+        description: "sorry, something went wrong",
+        status: "error",
+      });
     }
   });
 
   return (
     <form onSubmit={onSubmit}>
       <FormControl isInvalid={formState.errors.name !== undefined}>
-        <FormLabel>名前</FormLabel>
+        <FormLabel htmlFor="name">名前</FormLabel>
         <Input
+          id="name"
           {...register("name", {
             required: "名前は入力必須です",
           })}
@@ -55,8 +66,9 @@ export const CreateUserView: FC<{
         )}
       </FormControl>
       <FormControl isInvalid={formState.errors.tel !== undefined}>
-        <FormLabel>電話番号</FormLabel>
+        <FormLabel htmlFor="tel">電話番号</FormLabel>
         <Input
+          id="tel"
           {...register("tel", {
             required: "電話番号は入力必須です",
             pattern: {
@@ -78,8 +90,8 @@ export const CreateUserView: FC<{
         )}
       </FormControl>
       <FormControl isInvalid={formState.errors.bloodType !== undefined}>
-        <FormLabel>血液型</FormLabel>
-        <Select {...register("bloodType")}>
+        <FormLabel htmlFor="bloodType">血液型</FormLabel>
+        <Select id="bloodType" {...register("bloodType")}>
           {Object.values(bloodType).map((bloodType) => (
             <option key={bloodType} value={bloodType}>
               {bloodType}
@@ -92,8 +104,12 @@ export const CreateUserView: FC<{
           </FormErrorMessage>
         )}
       </FormControl>
-      <Button type="submit" isDisabled={!formState.isValid}>
-        create user
+      <Button
+        aria-labelledby="userSubmitButton"
+        type="submit"
+        isDisabled={!formState.isValid}
+      >
+        <Text id="userSubmitButton">create user</Text>
       </Button>
     </form>
   );

@@ -1,6 +1,11 @@
 import type { NextPage } from "next";
-import { CreateUser } from "@/features/user/create-user/create-user";
+import { CreateUserForm } from "@/features/user/create-user-form/create-user-form";
+import { useCreateUser } from "@/features/user/use-crate-user";
 
-const UserPage: NextPage = () => <CreateUser />;
+const UserPage: NextPage = () => {
+  const { createUser } = useCreateUser();
+
+  return <CreateUserForm createUser={createUser} />;
+};
 
 export default UserPage;

@@ -1,17 +1,29 @@
 import { useCallback } from "react";
-import { User } from "./user";
+import { createUserID, User, UserID } from "./user";
 import {
-  createUser,
+  addToUsersCollection,
   getRequestParams,
 } from "@/libs/firebase/firestore/command/create-user";
 import { Result } from "@/util/result";
 
+export type CreateUser = (user: User) => Promise<Result<UserID>>;
+
 type UseCreateUser = () => {
-  createUser: (user: User) => Promise<Result<void>>;
+  createUser: CreateUser;
 };
-export const useCreateUser: UseCreateUser = () => ({
-  createUser: useCallback(
-    async (props) => await createUser(getRequestParams(props)),
-    []
-  ),
-});
+export const useCreateUser: UseCreateUser = () => {
+  const createUser: CreateUser = useCallback(async (props) => {
+    const result = await addToUsersCollection(getRequestParams(props));
+
+    return result.isSuccess
+      ? {
+          ...result,
+          data: createUserID(result.data.id),
+        }
+      : result;
+  }, []);
+
+  return {
+    createUser,
+  };
+};
