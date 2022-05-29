@@ -18,7 +18,7 @@ export const CreateUserForm: FC<{
 }> = (props) => {
   const {
     useFormReturn: { register, formState, handleSubmit, getValues },
-    getUser,
+    fromUserField,
     isValidUserField,
   } = useUserForm();
   const toast = useToast();
@@ -27,7 +27,7 @@ export const CreateUserForm: FC<{
     const userField = getValues();
 
     if (isValidUserField(userField)) {
-      const result = await props.createUser(getUser(userField));
+      const result = await props.createUser(fromUserField(userField));
 
       if (result.isSuccess) {
         toast({

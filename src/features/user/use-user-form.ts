@@ -2,12 +2,12 @@ import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { bloodType, BloodType, User } from "./user";
 import { useForm } from "@/ui/form/use-form";
-import { Convert } from "@/util/convert";
+import { Converter } from "@/util/converter";
 
 type UseUserForm = (props?: { defaultValues: UserField }) => {
   useFormReturn: UseFormReturn<UserField>;
-  getUserField: Convert<User, UserField>;
-  getUser: Convert<ValidUserField, User>;
+  toUserField: Converter<User, UserField>;
+  fromUserField: Converter<ValidUserField, User>;
   isValidUserField: (props: UserField) => props is ValidUserField;
 };
 
@@ -33,7 +33,7 @@ export const useUserForm: UseUserForm = (props) => {
       defaultValues: props?.defaultValues ?? defaultValues,
       mode: "all",
     }),
-    getUserField: useCallback(
+    toUserField: useCallback(
       (props) => ({
         name: props.name,
         tel: String(props.tel),
@@ -41,7 +41,7 @@ export const useUserForm: UseUserForm = (props) => {
       }),
       []
     ),
-    getUser: useCallback(
+    fromUserField: useCallback(
       (props) => ({
         identified: false,
         name: props.name,

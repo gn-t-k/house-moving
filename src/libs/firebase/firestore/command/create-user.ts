@@ -1,20 +1,18 @@
 import { addDoc, collection } from "firebase/firestore";
-import { Users as FirestoreUsers } from "../collection/users";
+import { usersConverter } from "../collection/users-converter";
 import { User } from "@/features/user/user";
 import { firestore } from "@/libs/firebase/firestore/instance";
-import { Convert } from "@/util/convert";
 import { Result } from "@/util/result";
 
 type AddToUsersCollection = (
-  requestParams: FirestoreUsers
+  requestParams: User
 ) => Promise<Result<{ id: string }>>;
 export const addToUsersCollection: AddToUsersCollection = async (props) => {
   try {
-    const userDocRef = await addDoc(collection(firestore, "users"), {
-      name: props.name,
-      tel: props.tel,
-      bloodType: props.bloodType,
-    });
+    const userDocRef = await addDoc(
+      collection(firestore, "users").withConverter(usersConverter),
+      props
+    );
 
     return {
       isSuccess: true,
@@ -33,10 +31,3 @@ export const addToUsersCollection: AddToUsersCollection = async (props) => {
     };
   }
 };
-
-type GetRequestParams = Convert<User, FirestoreUsers>;
-export const getRequestParams: GetRequestParams = (props) => ({
-  name: props.name,
-  tel: props.tel,
-  bloodType: props.bloodType === null ? "" : props.bloodType,
-});
