@@ -1,5 +1,5 @@
 import { addDoc, collection } from "firebase/firestore";
-import { usersConverter } from "../collection/users-converter";
+import { usersConverter } from "../collection/users";
 import { User } from "@/features/user/user";
 import { firestore } from "@/libs/firebase/firestore/instance";
 import { Result } from "@/util/result";

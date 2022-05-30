@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { bloodType, BloodType, User } from "./user";
+import { bloodType, BloodType, isBloodType, User } from "./user";
 import { useForm } from "@/ui/form/use-form";
 import { Converter } from "@/util/converter";
 
@@ -54,8 +54,7 @@ export const useUserForm: UseUserForm = (props) => {
       (props): props is ValidUserField =>
         props.name !== "" &&
         !Number.isNaN(parseInt(props.tel)) &&
-        (props.bloodType === "" ||
-          Object.values(bloodType).some((v) => props.bloodType === v)),
+        (props.bloodType === "" || isBloodType(props.bloodType)),
       []
     ),
   };

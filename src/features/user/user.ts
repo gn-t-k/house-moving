@@ -28,3 +28,5 @@ export const bloodType = {
   ab: "AB",
 } as const;
 export type BloodType = typeof bloodType[keyof typeof bloodType];
+export const isBloodType = (value: string): value is BloodType =>
+  Object.values(bloodType).some((v) => v === value);
