@@ -5,6 +5,6 @@ import { LinkArea } from "@/ui/link-area/link-area";
 export const HelloWorld: FC = () => (
   <Stack>
     <p>hello world</p>
-    <LinkArea href="/user">create user page</LinkArea>
+    <LinkArea href="/users">user page</LinkArea>
   </Stack>
 );

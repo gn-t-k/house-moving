@@ -1,3 +1,5 @@
+import { UserList } from "./user-list/user-list";
+
 export type User = {
   name: string;
   tel: string;
@@ -30,3 +32,6 @@ export const bloodType = {
 export type BloodType = typeof bloodType[keyof typeof bloodType];
 export const isBloodType = (value: string): value is BloodType =>
   Object.values(bloodType).some((v) => v === value);
+
+export const identify = (userList: User[]): (User & { identified: true })[] =>
+  userList.flatMap((user) => (user.identified ? [user] : []));
