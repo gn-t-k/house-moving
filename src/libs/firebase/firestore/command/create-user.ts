@@ -14,6 +14,8 @@ export const addToUsersCollection: AddToUsersCollection = async (props) => {
       props
     );
 
+    console.info(userDocRef.id);
+
     return {
       isSuccess: true,
       data: {
@@ -22,6 +24,8 @@ export const addToUsersCollection: AddToUsersCollection = async (props) => {
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : "internal error";
+
+    console.error(e);
 
     return {
       isSuccess: false,

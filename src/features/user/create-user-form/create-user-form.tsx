@@ -9,7 +9,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC } from "react";
-import { CreateUser } from "../use-crate-user";
+import { CreateUser } from "../use-create-user";
 import { useUserForm } from "../use-user-form";
 import { bloodType } from "../user";
 
