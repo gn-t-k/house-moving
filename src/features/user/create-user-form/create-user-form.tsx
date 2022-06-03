@@ -9,13 +9,16 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { FC } from "react";
-import { CreateUser } from "../use-create-user";
 import { useUserForm } from "../use-user-form";
-import { bloodType } from "../user";
+import { bloodType, User, UserID } from "../user";
 
-export const CreateUserForm: FC<{
-  createUser: CreateUser;
-}> = (props) => {
+type Props = {
+  createUser: (user: User) => Promise<void>;
+  error: string | null;
+  createdUserID: UserID | null;
+};
+
+export const CreateUserForm: FC<Props> = (props) => {
   const {
     useFormReturn: { register, formState, handleSubmit, getValues },
     fromUserField,
@@ -27,21 +30,26 @@ export const CreateUserForm: FC<{
     const userField = getValues();
 
     if (isValidUserField(userField)) {
-      const result = await props.createUser(fromUserField(userField));
+      await props.createUser(fromUserField(userField));
 
-      if (result.isSuccess) {
-        toast({
-          title: "success",
-          description: `user created: ${result.data.value}`,
-          status: "success",
-        });
-      } else {
-        toast({
-          title: "failure",
-          description: `create user failed: ${result.failure.message}`,
-          status: "error",
-        });
-      }
+      toast(
+        props.error === null
+          ? {
+              title: "success",
+              description: `user created: ${
+                props.createdUserID !== null
+                  ? // FIXME: 必ずunknownになる
+                    props.createdUserID.value
+                  : "unknown user"
+              }`,
+              status: "success",
+            }
+          : {
+              title: "failure",
+              description: `create user failed: ${props.error}`,
+              status: "error",
+            }
+      );
     } else {
       toast({
         title: "failure",

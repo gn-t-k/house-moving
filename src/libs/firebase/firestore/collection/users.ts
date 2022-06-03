@@ -40,16 +40,27 @@ export const usersConverter: FirestoreDataConverter<User> = {
       );
     };
 
-    if (!isValidUserData(data)) {
-      throw new Error("Invalid User Data");
-    }
-
-    return {
-      identified: true,
-      id: createUserID(snapshot.id),
-      name: data.name,
-      tel: data.tel,
-      bloodType: data.bloodType === "" ? null : data.bloodType,
-    };
+    return isValidUserData(data)
+      ? {
+          identified: true,
+          id: createUserID(snapshot.id),
+          name: data.name,
+          tel: data.tel,
+          bloodType: data.bloodType === "" ? null : data.bloodType,
+        }
+      : invalidUser;
   },
 };
+
+// 不正なデータを取得した場合これを返す
+const invalidUser: User = {
+  identified: false,
+  name: "invalid user",
+  tel: "",
+  bloodType: null,
+};
+export const isInvalidUser = (user: User): user is typeof invalidUser =>
+  user.identified === invalidUser.identified &&
+  user.name === invalidUser.name &&
+  user.tel === invalidUser.tel &&
+  user.bloodType === invalidUser.bloodType;

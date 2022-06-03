@@ -1,26 +1,30 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { createUserID, User, UserID } from "./user";
 import { addToUsersCollection } from "@/libs/firebase/firestore/command/create-user";
-import { Result } from "@/util/result";
-
-export type CreateUser = (user: User) => Promise<Result<UserID>>;
 
 type UseCreateUser = () => {
-  createUser: CreateUser;
+  isLoading: boolean;
+  createUser: (user: User) => Promise<void>;
+  createdUserID: UserID | null;
+  error: string | null;
 };
 export const useCreateUser: UseCreateUser = () => {
-  const createUser: CreateUser = useCallback(async (user) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [createdUserID, setCreatedUserID] = useState<UserID | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const createUser = useCallback(async (user: User) => {
+    setIsLoading(true);
     const result = await addToUsersCollection(user);
 
-    return result.isSuccess
-      ? {
-          ...result,
-          data: createUserID(result.data.id),
-        }
-      : result;
+    setCreatedUserID(result.isSuccess ? createUserID(result.data.id) : null);
+    setError(result.isSuccess ? null : result.failure.message);
+    setIsLoading(false);
   }, []);
 
   return {
+    isLoading,
     createUser,
+    createdUserID,
+    error,
   };
 };

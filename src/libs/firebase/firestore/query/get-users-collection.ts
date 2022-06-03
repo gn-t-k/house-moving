@@ -1,5 +1,5 @@
 import { collection, getDocs } from "firebase/firestore";
-import { usersConverter } from "../collection/users";
+import { isInvalidUser, usersConverter } from "../collection/users";
 import { firestore } from "../instance";
 import { User } from "@/features/user/user";
 import { Result } from "@/util/result";
@@ -12,7 +12,11 @@ export const getUsersCollection: GetUsersCollection = async () => {
     );
 
     const snapShot = await getDocs(usersCollectionRef);
-    const data = snapShot.docs.map((doc) => doc.data());
+
+    const removeInvalidUser = (userList: User[]) =>
+      userList.filter((user) => !isInvalidUser(user));
+
+    const data = removeInvalidUser(snapShot.docs.map((doc) => doc.data()));
 
     console.info(data);
 

@@ -1,24 +1,26 @@
 import { Stack, Text } from "@chakra-ui/react";
 import { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGetUserList } from "@/features/user/use-get-user-list";
-import { User } from "@/features/user/user";
 import { UserList } from "@/features/user/user-list/user-list";
 import { LinkArea } from "@/ui/link-area/link-area";
 
 const UserPage: NextPage = () => {
-  const { getUserList } = useGetUserList();
-  const [userList, setUserList] = useState<User[]>([]);
+  const { isLoading, getUserList, userList, error } = useGetUserList();
 
   useEffect(() => {
     (async () => {
-      const result = await getUserList();
-
-      setUserList(result.isSuccess ? result.data : []);
+      await getUserList();
     })();
   }, [getUserList]);
 
-  return (
+  return isLoading ? (
+    <Text>Loading…</Text>
+  ) : error !== null ? (
+    <Text>{error}</Text>
+  ) : userList.length === 0 ? (
+    <Text>no user exist</Text>
+  ) : (
     // TODO: コンポーネント切り出し
     <Stack direction={"column"}>
       <LinkArea href="/users/new">
