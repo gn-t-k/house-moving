@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { createUserID, User, UserID } from "./user";
-import { addToUsersCollection } from "@/libs/firebase/firestore/command/create-user";
+import { addToUsersCollection } from "@/libs/firebase/firestore/command/add-to-users-collection";
 
 type UseCreateUser = () => {
   isLoading: boolean;

@@ -1,6 +1,7 @@
 import { ListItem, UnorderedList, Stack, Text } from "@chakra-ui/react";
 import { FC } from "react";
 import { identify, User } from "../user";
+import styles from "./user-list.module.css";
 
 type Props = {
   userList: User[];
