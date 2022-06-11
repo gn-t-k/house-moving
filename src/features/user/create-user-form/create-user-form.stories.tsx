@@ -3,7 +3,8 @@ import { ComponentMeta, ComponentStoryObj } from "@storybook/react";
 import { within, userEvent } from "@storybook/testing-library";
 import { fireEvent } from "@testing-library/react";
 import { ComponentProps } from "react";
-import { createUserID, UserID } from "../user";
+import { ulid } from "ulid";
+import { createUserID, User, UserID } from "../user";
 import { CreateUserForm } from "./create-user-form";
 import { Result } from "@/util/result";
 
@@ -16,18 +17,19 @@ const componentMeta: Meta = {
 };
 export default componentMeta;
 
-const dummyCreateUser = (): Promise<Result<UserID>> => {
-  action("create user")();
+const dummyCreateUser = async (user: User): Promise<void> => {
+  action(JSON.stringify(user))();
 
-  return Promise.resolve({
-    isSuccess: true,
-    data: createUserID("userID"),
-  });
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 };
 
 const Template: Story = {
   render: (props: Partial<Props>) => (
-    <CreateUserForm createUser={props.createUser ?? dummyCreateUser} />
+    <CreateUserForm
+      createUser={props.createUser ?? dummyCreateUser}
+      error={props.error ?? null}
+      createdUserID={props.createdUserID ?? createUserID("userID")}
+    />
   ),
 };
 
@@ -38,6 +40,7 @@ export const Default: Story = {
 export const EntryAndSubmit: Story = {
   ...Default,
   play: ({ canvasElement }) => {
+    console.log(ulid());
     const canvas = within(canvasElement);
 
     userEvent.type(canvas.getByLabelText("名前"), "テスト太郎");

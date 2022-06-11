@@ -9,6 +9,9 @@ const UserPage: NextPage = () => {
   const { isLoading, getUserList, userList, error } = useGetUserList();
 
   useEffect(() => {
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then(console.log);
     (async () => {
       await getUserList();
     })();

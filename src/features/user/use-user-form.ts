@@ -2,12 +2,11 @@ import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { bloodType, BloodType, isBloodType, User } from "./user";
 import { useForm } from "@/ui/form/use-form";
-import { Converter } from "@/util/converter";
 
 type UseUserForm = (props?: { defaultValues: UserField }) => {
   useFormReturn: UseFormReturn<UserField>;
-  toUserField: Converter<User, UserField>;
-  fromUserField: Converter<ValidUserField, User>;
+  toUserField: (props: User) => UserField;
+  fromUserField: (props: ValidUserField) => User;
   isValidUserField: (props: UserField) => props is ValidUserField;
 };
 
