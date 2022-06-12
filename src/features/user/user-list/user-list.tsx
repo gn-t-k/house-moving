@@ -1,6 +1,6 @@
 import { ListItem, UnorderedList, Stack, Text } from "@chakra-ui/react";
 import { FC } from "react";
-import { identify, User } from "../user";
+import { User } from "../user";
 import styles from "./user-list.module.css";
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 
 export const UserList: FC<Props> = (props) => (
   <UnorderedList>
-    {identify(props.userList).map((user) => (
+    {props.userList.map((user) => (
       <ListItem key={user.id.value}>
         <Stack direction={"column"}>
           <Text>name: {user.name}</Text>

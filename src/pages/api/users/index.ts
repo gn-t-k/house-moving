@@ -1,11 +1,27 @@
-import { User, PrismaClient } from "@prisma/client";
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiHandler } from "next";
+import { getUsers } from "@/libs/prisma/query/get-users";
+import { Result } from "@/util/result";
 
-const prisma = new PrismaClient();
+const getHandler: NextApiHandler<Result<unknown>> = async (_req, res) => {
+  const result = await getUsers();
 
-const handler = async (req: NextApiRequest, res: NextApiResponse<User[]>) => {
-  const users = await prisma.user.findMany();
+  if (result.isSuccess) {
+    res.status(200).json(result);
+  } else {
+    res.status(500).json(result);
+  }
+};
 
-  res.status(200).json(users);
+const handler: NextApiHandler<Result<unknown>> = async (req, res) => {
+  if (req.method === "GET") {
+    getHandler(req, res);
+  } else {
+    res.status(405).json({
+      isSuccess: false,
+      failure: {
+        message: "method not allowed",
+      },
+    });
+  }
 };
 export default handler;

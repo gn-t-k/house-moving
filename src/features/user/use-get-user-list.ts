@@ -14,7 +14,8 @@ export const useGetUserList: UseGetUserList = () => {
   const [error, setError] = useState<string | null>(null);
   const getUserList = useCallback(async () => {
     setIsLoading(true);
-    const result = await getUsersCollection();
+
+    const result = await fetch("/api/users").then((res) => res.json());
 
     setUserList(result.isSuccess ? result.data : []);
     setError(result.isSuccess ? null : result.failure.message);
