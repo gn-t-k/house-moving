@@ -1,3 +1,5 @@
+import { ulid } from "ulid";
+
 export type User = {
   id: UserID;
   name: string;
@@ -6,7 +8,7 @@ export type User = {
 };
 
 export type UserID = {
-  type: "UserID";
+  readonly type: "UserID";
   value: string;
 };
 export const createUserID = (id: string): UserID => ({
@@ -23,3 +25,10 @@ export const bloodType = {
 export type BloodType = typeof bloodType[keyof typeof bloodType];
 export const isBloodType = (value: string): value is BloodType =>
   Object.values(bloodType).some((v) => v === value);
+
+export const createUser = (
+  props: Omit<User, "id"> & { id?: string | undefined }
+): User => ({
+  ...props,
+  id: createUserID(props.id ?? ulid()),
+});

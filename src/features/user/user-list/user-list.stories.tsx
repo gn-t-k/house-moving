@@ -14,14 +14,12 @@ export default componentMeta;
 
 const dummyUserList: User[] = [
   {
-    identified: true,
     id: createUserID("aaa"),
     name: "name1",
     tel: "0000000000",
     bloodType: "A",
   },
   {
-    identified: true,
     id: createUserID("iii"),
     name: "name2",
     tel: "1111111111",

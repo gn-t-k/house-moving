@@ -24,7 +24,7 @@ export const getUsers: GetUsers = async () => {
   } catch (error) {
     return {
       isSuccess: false,
-      failure: {
+      error: {
         message:
           error instanceof Error ? error.message : "something went wrong.",
       },

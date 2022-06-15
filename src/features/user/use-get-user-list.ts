@@ -1,26 +1,17 @@
-import { useCallback, useState } from "react";
 import { User } from "./user";
-import { getUsersCollection } from "@/libs/firebase/firestore/query/get-users-collection";
+import { useGetRequest } from "@/util/api-routes-types/use-get-request";
 
 type UseGetUserList = () => {
+  userList: User[] | null;
   isLoading: boolean;
-  getUserList: () => Promise<void>;
-  userList: User[];
   error: string | null;
 };
 export const useGetUserList: UseGetUserList = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [userList, setUserList] = useState<User[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const getUserList = useCallback(async () => {
-    setIsLoading(true);
+  const { isLoading, data, error } = useGetRequest("/api/users");
 
-    const result = await fetch("/api/users").then((res) => res.json());
-
-    setUserList(result.isSuccess ? result.data : []);
-    setError(result.isSuccess ? null : result.failure.message);
-    setIsLoading(false);
-  }, []);
-
-  return { isLoading, getUserList, userList, error };
+  return {
+    isLoading,
+    userList: data,
+    error: error?.message ?? null,
+  };
 };

@@ -3,10 +3,8 @@ import { ComponentMeta, ComponentStoryObj } from "@storybook/react";
 import { within, userEvent } from "@storybook/testing-library";
 import { fireEvent } from "@testing-library/react";
 import { ComponentProps } from "react";
-import { ulid } from "ulid";
-import { createUserID, User, UserID } from "../user";
+import { createUserID, User } from "../user";
 import { CreateUserForm } from "./create-user-form";
-import { Result } from "@/util/result";
 
 type Meta = ComponentMeta<typeof CreateUserForm>;
 type Props = ComponentProps<typeof CreateUserForm>;
@@ -40,7 +38,6 @@ export const Default: Story = {
 export const EntryAndSubmit: Story = {
   ...Default,
   play: ({ canvasElement }) => {
-    console.log(ulid());
     const canvas = within(canvasElement);
 
     userEvent.type(canvas.getByLabelText("名前"), "テスト太郎");

@@ -1,13 +1,15 @@
+export interface Data<T> {
+  data: T;
+}
+export interface Error {
+  error: {
+    message: string;
+  };
+}
 export type Result<T> =
-  | {
+  | ({
       isSuccess: true;
-      data: T;
-    }
-  | {
+    } & Data<T>)
+  | ({
       isSuccess: false;
-      failure: Failure;
-    };
-
-type Failure = {
-  message: string;
-};
+    } & Error);
