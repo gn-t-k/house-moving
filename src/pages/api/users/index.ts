@@ -1,5 +1,5 @@
 import type { ApiHandler } from "@/api-routes-types";
-import { createUserID, User, UserID } from "@/features/user/user";
+import { User, UserID } from "@/features/user/user";
 import { createUser } from "@/libs/prisma/command/create-user";
 import { getUsers } from "@/libs/prisma/query/get-users";
 

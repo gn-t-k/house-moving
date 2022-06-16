@@ -1,5 +1,5 @@
 import qs from "query-string";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { isResult } from "./is-result";
 import {
   PostResBody,
@@ -14,51 +14,63 @@ export const usePostRequest = <
   ResBody extends PostResBody[T],
   ReqBody extends PostReqBody[T]
 >(
-  key: T,
-  {
-    query,
-    requestInit,
-  }: {
-    query?: ReqQuery;
-    requestInit?: Omit<RequestInit, "body"> & { body?: ReqBody };
-  } = {}
+  key: T
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<ResBody | null>(null);
   const [error, setError] = useState<Error["error"] | null>(null);
 
-  useEffect(() => {
-    const defaultHeaders = {
-      "Content-Type": "application/json",
-    };
-    const url = query ? `${key}?${qs.stringify(query)}` : key;
+  const sendRequest = useCallback(
+    async (
+      body?: ReqBody,
+      {
+        query,
+        requestInit,
+      }: {
+        query?: ReqQuery;
+        requestInit?: Omit<RequestInit, "body">;
+      } = {}
+    ) => {
+      const defaultHeaders = {
+        "Content-Type": "application/json",
+      };
+      const url = query ? `${key}?${qs.stringify(query)}` : key;
 
-    (async () => {
       setIsLoading(true);
+      setData(null);
       setError(null);
 
       const result = await fetch(url, {
         ...requestInit,
         method: "POST",
         headers: { ...defaultHeaders, ...requestInit?.headers },
-        body: requestInit?.body ? JSON.stringify(requestInit.body) : undefined,
+        body: body ? JSON.stringify(body) : undefined,
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (isResult<ResBody>(result)) {
+            if (result.isSuccess) {
+              setData(result.data);
+            } else {
+              setError(result.error);
+            }
+          } else {
+            setError({
+              httpStatus: 500,
+              message: "something went wrong",
+            });
+          }
+
+          return res.json();
+        })
         .finally(() => {
           setIsLoading(false);
         });
-
-      if (isResult<ResBody>(result)) {
-        if (result.isSuccess) {
-          setData(result.data);
-        } else {
-          setError(result.error);
-        }
-      }
-    })();
-  }, [key, query, requestInit]);
+    },
+    [key]
+  );
 
   return {
+    sendRequest,
     isLoading,
     data,
     error,

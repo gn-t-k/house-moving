@@ -1,11 +1,11 @@
-export interface Data<T> {
+type Data<T> = {
   data: T;
-}
-export interface Error {
+};
+type Error = {
   error: {
     message: string;
   };
-}
+};
 export type Result<T> =
   | ({
       isSuccess: true;

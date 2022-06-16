@@ -4,7 +4,7 @@ import { prisma } from "@/libs/prisma/instance";
 import { Result } from "@/util/result";
 
 type CreateUser = (user: User) => Promise<Result<UserID>>;
-export const createUser: CreateUser = async (user: User) => {
+export const createUser: CreateUser = async (user) => {
   const createPrismaUser = async (user: User) =>
     await prisma.user.create({
       data: {

@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react";
 import { ComponentProps } from "react";
-import { createUserID, User, UserID } from "../user";
+import { createUserID, User } from "../user";
 import { UserList } from "./user-list";
 
 type Meta = ComponentMeta<typeof UserList>;

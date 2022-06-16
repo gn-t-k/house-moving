@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { bloodType, BloodType, createUser, isBloodType, User } from "./user";
+import { BloodType, createUser, isBloodType, User } from "./user";
 import { useForm } from "@/ui/form/use-form";
 
 type UseUserForm = (props?: { defaultValues: UserField }) => {
