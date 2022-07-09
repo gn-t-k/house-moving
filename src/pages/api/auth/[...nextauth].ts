@@ -19,8 +19,11 @@ const auth = NextAuth({
   callbacks: {
     session: async ({ session, user }) => {
       return {
-        id: user.id,
         ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
       };
     },
   },

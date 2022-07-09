@@ -1,10 +1,8 @@
 export type Session = {
   id: string;
-  user: {
-    name: string;
-    email: string;
-    image: string;
-  };
+  name: string;
+  email: string;
+  image: string;
 };
 
 export const isValidSession = (data: unknown): data is Session => {
@@ -12,8 +10,8 @@ export const isValidSession = (data: unknown): data is Session => {
 
   return (
     typeof session?.id === "string" &&
-    typeof session?.user.name === "string" &&
-    typeof session?.user.email === "string" &&
-    typeof session?.user.image === "string"
+    typeof session?.name === "string" &&
+    typeof session?.email === "string" &&
+    typeof session?.image === "string"
   );
 };

@@ -45,10 +45,10 @@ export const useAuthState: UseAuthState = (
     setAuthState(
       data === undefined
         ? { status: "loading" }
-        : !isValidSession(data)
+        : !isValidSession(data?.user)
         ? { status: "unauthenticated" }
         : status === "authenticated"
-        ? { status, session: data }
+        ? { status, session: data.user }
         : { status }
     );
 

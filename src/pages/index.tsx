@@ -11,7 +11,7 @@ const Home: NextPage = () => {
     return null;
   }
 
-  const { name, image } = auth.session.user;
+  const { name, image } = auth.session;
 
   return (
     <AccountPage
