@@ -16,5 +16,13 @@ const auth = NextAuth({
       clientSecret: GOOGLE_SECRET,
     }),
   ],
+  callbacks: {
+    session: async ({ session, user }) => {
+      return {
+        id: user.id,
+        ...session,
+      };
+    },
+  },
 });
 export default auth;

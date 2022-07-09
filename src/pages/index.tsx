@@ -1,25 +1,24 @@
-import { Spinner, Text } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { useSession, signIn, signOut } from "next-auth/react";
 import { AccountPage } from "@/features/account/account-page";
+import { useAuthState } from "@/features/auth/use-auth";
 
 const Home: NextPage = () => {
-  const { data: session, status } = useSession();
-  const isLoggedIn = !(session === null || session === undefined);
-  const isLoading = status === "loading";
-  console.log({ session });
+  const [auth, { logout }] = useAuthState({
+    redirectIfLoggedOut: true,
+  });
 
-  return isLoading ? (
-    <Spinner />
-  ) : isLoggedIn ? (
+  if (auth.status !== "authenticated") {
+    return null;
+  }
+
+  const { name, image } = auth.session.user;
+
+  return (
     <AccountPage
-      isLoggedIn={true}
-      userName={session.user?.name ?? "unknown user"}
-      userIcon={session.user?.image ?? ""} // TODO: 画像のURL用意する
-      logout={signOut}
+      userName={name}
+      userIcon={image} // TODO: 画像のURL用意する
+      logout={logout}
     />
-  ) : (
-    <AccountPage isLoggedIn={false} login={signIn} />
   );
 };
 
