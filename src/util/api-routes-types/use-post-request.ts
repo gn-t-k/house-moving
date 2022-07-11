@@ -1,5 +1,5 @@
 import qs from "query-string";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { isResult } from "./is-result";
 import {
   PostResBody,
