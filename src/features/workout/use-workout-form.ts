@@ -1,12 +1,12 @@
 import { UseFormReturn } from "react-hook-form";
 import { ulid } from "ulid";
-import { Workout } from "../workout";
+import { Workout } from "./workout";
 import { Exercise } from "@/features/exercise/exercise";
 import { Trainee } from "@/features/trainee/trainee";
 // import { WorkoutMenu } from "@/features/workout-menu/workout-menu";
 import { useForm } from "@/ui/form/use-form";
 
-type RegisterWorkoutField = {
+export type WorkoutField = {
   workoutSets: {
     exerciseId: string;
     weight: string;
@@ -16,20 +16,29 @@ type RegisterWorkoutField = {
   memo: string;
 };
 
-type UseRegisterWorkoutForm = (
-  _defaultValues?: RegisterWorkoutField
-) => UseFormReturn<RegisterWorkoutField>;
-export const useRegisterWorkoutForm: UseRegisterWorkoutForm = (props) =>
-  useForm<RegisterWorkoutField>({
-    defaultValues: props ?? {
-      workoutSets: [],
+export const defaultValues: WorkoutField = {
+  workoutSets: [
+    {
+      exerciseId: "",
+      weight: "",
+      repetition: "",
       memo: "",
     },
+  ],
+  memo: "",
+};
+
+type UseWorkoutForm = (
+  _defaultValues?: WorkoutField
+) => UseFormReturn<WorkoutField>;
+export const useWorkoutForm: UseWorkoutForm = (props) =>
+  useForm<WorkoutField>({
+    defaultValues: props ?? defaultValues,
     mode: "all",
   });
 
 export const isValidRegisterWorkoutField = (
-  fieldValue: RegisterWorkoutField
+  fieldValue: WorkoutField
 ): fieldValue is ValidRegisterWorkoutField => {
   try {
     const _ = new ValidRegisterWorkoutField(fieldValue);
@@ -65,10 +74,10 @@ export const toWorkout: ToWorkout = ({
 });
 
 class ValidRegisterWorkoutField {
-  public workoutSets: RegisterWorkoutField["workoutSets"];
-  public memo: RegisterWorkoutField["memo"];
+  public workoutSets: WorkoutField["workoutSets"];
+  public memo: WorkoutField["memo"];
 
-  public constructor(props: RegisterWorkoutField) {
+  public constructor(props: WorkoutField) {
     const isWeightNumericString = !props.workoutSets.some((workoutSet) =>
       Number.isNaN(parseInt(workoutSet.weight))
     );

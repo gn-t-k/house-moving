@@ -1,7 +1,7 @@
 import * as rhf from "react-hook-form";
 
 type UseForm = <T>(
-  props: rhf.UseFormProps<T> & {
+  _props: rhf.UseFormProps<T> & {
     defaultValues: T;
   }
 ) => rhf.UseFormReturn<T>;
