@@ -13,5 +13,4 @@ type WorkoutSet = {
   exercise: Exercise;
   weight: number;
   repetition: number;
-  memo: string;
 };

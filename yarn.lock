@@ -3752,6 +3752,11 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
+"@testing-library/user-event@^14.2.5":
+  version "14.2.5"
+  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.2.5.tgz#a27a16ee7f915c22c62b9c065d743248ee79dcb6"
+  integrity sha512-xcSw47H8JidxQPAqPlHp4l51EYJx+2TlHgYBW9i+noNlgUMMrhgtefnrWcpZ1k9ep6SMhJVyx3N7F4tIKTuJ9w==
+
 "@tootallnate/once@2":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"

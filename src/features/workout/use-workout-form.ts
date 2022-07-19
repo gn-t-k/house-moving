@@ -1,17 +1,17 @@
-import { UseFormReturn } from "react-hook-form";
+import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { ulid } from "ulid";
 import { Workout } from "./workout";
 import { Exercise } from "@/features/exercise/exercise";
 import { Trainee } from "@/features/trainee/trainee";
 // import { WorkoutMenu } from "@/features/workout-menu/workout-menu";
 import { useForm } from "@/ui/form/use-form";
+import { Result } from "@/util/result";
 
 export type WorkoutField = {
   workoutSets: {
     exerciseId: string;
     weight: string;
     repetition: string;
-    memo: string;
   }[];
   memo: string;
 };
@@ -22,56 +22,128 @@ export const defaultValues: WorkoutField = {
       exerciseId: "",
       weight: "",
       repetition: "",
-      memo: "",
     },
   ],
   memo: "",
 };
 
-type UseWorkoutForm = (
-  _defaultValues?: WorkoutField
-) => UseFormReturn<WorkoutField>;
-export const useWorkoutForm: UseWorkoutForm = (props) =>
-  useForm<WorkoutField>({
-    defaultValues: props ?? defaultValues,
+type UseWorkoutForm = (_props: {
+  defaultValues?: WorkoutField;
+  trainee: Trainee;
+  date: Date;
+  getExerciseById: (_id: string) => Promise<Exercise>;
+  registerWorkout: (_workout: Workout) => Promise<void>;
+}) => {
+  /**
+   * memo:
+   * react-hook-formの型をhooksに隠蔽してしまってもよいが、
+   * そうするとJSXがかなり読みにくくなってしまうため、あえてそのまま露出させている
+   */
+  register: UseFormReturn<WorkoutField>["register"];
+  errors: UseFormReturn<WorkoutField>["formState"]["errors"];
+  workoutSetIdList: string[];
+  isLastField: boolean;
+  appendWorkoutSetField: () => void;
+  removeWorkoutSetField: (_index: number) => void;
+  handleSubmit: () => Promise<Result<null>>;
+};
+export const useWorkoutForm: UseWorkoutForm = (props) => {
+  const form = useForm<WorkoutField>({
+    defaultValues: props.defaultValues ?? defaultValues,
     mode: "all",
   });
 
-export const isValidRegisterWorkoutField = (
-  fieldValue: WorkoutField
-): fieldValue is ValidRegisterWorkoutField => {
-  try {
-    const _ = new ValidRegisterWorkoutField(fieldValue);
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "workoutSets",
+  });
 
-    return true;
-  } catch (error) {
-    return false;
-  }
+  const isLastField = fields.length === 1;
+
+  const workoutSetIdList = fields.map((field) => field.id);
+
+  const appendWorkoutSetField = () => {
+    append(defaultValues.workoutSets);
+  };
+
+  const removeWorkoutSetField = (index: number) => {
+    if (isLastField) {
+      return;
+    }
+
+    remove(index);
+  };
+
+  const handleSubmit = async (): Promise<Result<null>> => {
+    const fieldValue = form.getValues();
+
+    try {
+      const validFieldValue = new ValidRegisterWorkoutField(fieldValue);
+
+      const workout = await toWorkout({
+        fieldValue: validFieldValue,
+        trainee: props.trainee,
+        date: props.date,
+        getExerciseById: props.getExerciseById,
+      });
+
+      await props.registerWorkout(workout);
+
+      return {
+        isSuccess: true,
+        data: null,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message: error instanceof Error ? error.message : "internal error",
+        },
+      };
+    }
+  };
+
+  return {
+    register: form.register,
+    errors: form.formState.errors,
+    workoutSetIdList,
+    isLastField,
+    appendWorkoutSetField,
+    removeWorkoutSetField,
+    handleSubmit,
+  };
 };
 
 type ToWorkout = (_props: {
   fieldValue: ValidRegisterWorkoutField;
   trainee: Trainee;
   date: Date;
-  getExerciseById: (_id: string) => Exercise;
-}) => Workout;
-export const toWorkout: ToWorkout = ({
+  getExerciseById: (_id: string) => Promise<Exercise>;
+}) => Promise<Workout>;
+export const toWorkout: ToWorkout = async ({
   fieldValue,
   trainee,
   date,
   getExerciseById,
-}) => ({
-  id: ulid(),
-  trainee,
-  workoutSets: fieldValue.workoutSets.map((workoutSet) => ({
-    exercise: getExerciseById(workoutSet.exerciseId),
-    weight: parseInt(workoutSet.weight),
-    repetition: parseInt(workoutSet.repetition),
-    memo: workoutSet.memo,
-  })),
-  date,
-  memo: fieldValue.memo,
-});
+}) => {
+  const workoutSets = await Promise.all(
+    fieldValue.workoutSets.map((workoutSet) =>
+      (async () => ({
+        exercise: await getExerciseById(workoutSet.exerciseId),
+        weight: parseInt(workoutSet.weight),
+        repetition: parseInt(workoutSet.repetition),
+      }))()
+    )
+  );
+
+  return {
+    id: ulid(),
+    trainee,
+    workoutSets,
+    date,
+    memo: fieldValue.memo,
+  };
+};
 
 class ValidRegisterWorkoutField {
   public workoutSets: WorkoutField["workoutSets"];
