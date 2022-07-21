@@ -111,10 +111,14 @@ const Template: Story = {
         memo: "ナロー",
       },
     ];
-    const registerWorkout = (workout: Workout) => {
+    const registerWorkout = async (workout: Workout) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       action("onSubmit")(workout);
     };
-    const getExerciseById = (id: string) => {
+    const getExerciseById = async (id: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       action("getExerciseById")(id);
 
       return exercises;
@@ -139,20 +143,30 @@ export const Default: Story = {
   ...Template,
 };
 
+const inputExercise = async (value: string) => {
+  const exerciseSelect = screen.getByLabelText<HTMLSelectElement>("種目");
+  const exerciseOption = screen.getByRole("option", { name: value });
+
+  await userEvent.selectOptions(exerciseSelect, exerciseOption);
+};
+
+const inputWeight = async (value: string) => {
+  const weightInput = screen.getByLabelText<HTMLInputElement>("重量");
+
+  await userEvent.type(weightInput, value);
+};
+
+const inputRepetition = async (value: string) => {
+  const repetitionInput = screen.getByLabelText<HTMLInputElement>("回数");
+
+  await userEvent.type(repetitionInput, value);
+};
+
 export const 必須項目を入力: Story = {
   ...Default,
   play: async () => {
-    const exerciseSelect = screen.getByLabelText<HTMLSelectElement>("種目");
-    const exerciseOption = screen.getByRole("option", { name: "ベンチプレス" });
-
-    await userEvent.selectOptions(exerciseSelect, exerciseOption);
-
-    const weightInput = screen.getByLabelText<HTMLInputElement>("重量");
-
-    await userEvent.type(weightInput, "100");
-
-    const repetitionInput = screen.getByLabelText<HTMLInputElement>("回数");
-
-    await userEvent.type(repetitionInput, "5");
+    await inputExercise("ベンチプレス");
+    await inputWeight("100");
+    await inputRepetition("5");
   },
 };

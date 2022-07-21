@@ -7,8 +7,9 @@ import {
   FormLabel,
   FormErrorMessage,
   Textarea,
+  Spinner,
 } from "@chakra-ui/react";
-import { FC, FormEventHandler, MouseEventHandler } from "react";
+import { FC, FormEventHandler, MouseEventHandler, useState } from "react";
 import { useWorkoutForm } from "../use-workout-form";
 import { Workout } from "../workout";
 import { Exercise } from "@/features/exercise/exercise";
@@ -25,10 +26,11 @@ export const RegisterWorkout: FC<Props> = (props) => {
   const {
     register,
     errors,
-    workoutSetIdList,
+    isValid,
+    recordIdList,
     isLastField,
-    appendWorkoutSetField,
-    removeWorkoutSetField,
+    appendRecordField,
+    removeRecordField,
     handleSubmit,
   } = useWorkoutForm({
     trainee: props.trainee,
@@ -37,39 +39,42 @@ export const RegisterWorkout: FC<Props> = (props) => {
     registerWorkout: props.registerWorkout,
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleAppend: MouseEventHandler<HTMLButtonElement> = (_e) => {
-    appendWorkoutSetField();
+    appendRecordField();
   };
   const handleRemove =
     (index: number): MouseEventHandler<HTMLButtonElement> =>
     (_e) => {
-      removeWorkoutSetField(index);
+      removeRecordField(index);
     };
   const handleClickSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
 
+    setIsLoading(true);
     const result = await handleSubmit();
+    setIsLoading(false);
 
     if (!result.isSuccess) {
       // TODO: トーストとか出す
+      console.log(result.error);
     }
   };
 
   return (
     <form onSubmit={handleClickSubmit}>
       <Stack direction="column">
-        {workoutSetIdList.map((id, index) => (
+        {recordIdList.map((id, index) => (
           <Stack key={id} direction="row">
             <Stack direction="column">
               <FormControl
-                isInvalid={
-                  errors.workoutSets?.[index]?.exerciseId !== undefined
-                }
+                isInvalid={errors.records?.[index]?.exerciseId !== undefined}
               >
                 <FormLabel>種目</FormLabel>
                 <Select
                   placeholder="未選択"
-                  {...register(`workoutSets.${index}.exerciseId`, {
+                  {...register(`records.${index}.exerciseId`, {
                     required: { value: true, message: "入力必須です" },
                   })}
                 >
@@ -80,15 +85,15 @@ export const RegisterWorkout: FC<Props> = (props) => {
                   ))}
                 </Select>
                 <FormErrorMessage>
-                  {errors.workoutSets?.[index]?.exerciseId?.message}
+                  {errors.records?.[index]?.exerciseId?.message}
                 </FormErrorMessage>
               </FormControl>
               <FormControl
-                isInvalid={errors.workoutSets?.[index]?.weight !== undefined}
+                isInvalid={errors.records?.[index]?.weight !== undefined}
               >
                 <FormLabel>重量</FormLabel>
                 <Input
-                  {...register(`workoutSets.${index}.weight`, {
+                  {...register(`records.${index}.weight`, {
                     required: {
                       value: true,
                       message: "入力必須です",
@@ -100,17 +105,15 @@ export const RegisterWorkout: FC<Props> = (props) => {
                   })}
                 />
                 <FormErrorMessage>
-                  {errors.workoutSets?.[index]?.weight?.message}
+                  {errors.records?.[index]?.weight?.message}
                 </FormErrorMessage>
               </FormControl>
               <FormControl
-                isInvalid={
-                  errors.workoutSets?.[index]?.repetition !== undefined
-                }
+                isInvalid={errors.records?.[index]?.repetition !== undefined}
               >
                 <FormLabel>回数</FormLabel>
                 <Input
-                  {...register(`workoutSets.${index}.repetition`, {
+                  {...register(`records.${index}.repetition`, {
                     required: {
                       value: true,
                       message: "入力必須です",
@@ -122,7 +125,7 @@ export const RegisterWorkout: FC<Props> = (props) => {
                   })}
                 />
                 <FormErrorMessage>
-                  {errors.workoutSets?.[index]?.repetition?.message}
+                  {errors.records?.[index]?.repetition?.message}
                 </FormErrorMessage>
               </FormControl>
             </Stack>
@@ -136,7 +139,9 @@ export const RegisterWorkout: FC<Props> = (props) => {
           <FormLabel>メモ</FormLabel>
           <Textarea {...register("memo")} />
         </FormControl>
-        <Button type="submit">ワークアウトを登録</Button>
+        <Button type="submit" isDisabled={!isValid}>
+          {isLoading ? <Spinner /> : "ワークアウトを登録"}
+        </Button>
       </Stack>
     </form>
   );

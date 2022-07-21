@@ -4,12 +4,12 @@ import { Trainee } from "../trainee/trainee";
 export type Workout = {
   id: string;
   trainee: Trainee;
-  workoutSets: WorkoutSet[];
+  records: Record[];
   date: Date;
   memo: string;
 };
 
-type WorkoutSet = {
+type Record = {
   exercise: Exercise;
   weight: number;
   repetition: number;

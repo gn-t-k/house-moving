@@ -1,6 +1,6 @@
 import { Exercise } from "../exercise/exercise";
 
-export type WorkoutMenu = {
+export type Program = {
   id: string;
   name: string;
   contents: Content[];

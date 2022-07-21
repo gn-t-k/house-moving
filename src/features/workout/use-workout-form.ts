@@ -1,14 +1,14 @@
+import { useCallback, useMemo } from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { ulid } from "ulid";
 import { Workout } from "./workout";
 import { Exercise } from "@/features/exercise/exercise";
 import { Trainee } from "@/features/trainee/trainee";
-// import { WorkoutMenu } from "@/features/workout-menu/workout-menu";
 import { useForm } from "@/ui/form/use-form";
 import { Result } from "@/util/result";
 
 export type WorkoutField = {
-  workoutSets: {
+  records: {
     exerciseId: string;
     weight: string;
     repetition: string;
@@ -17,7 +17,7 @@ export type WorkoutField = {
 };
 
 export const defaultValues: WorkoutField = {
-  workoutSets: [
+  records: [
     {
       exerciseId: "",
       weight: "",
@@ -41,10 +41,11 @@ type UseWorkoutForm = (_props: {
    */
   register: UseFormReturn<WorkoutField>["register"];
   errors: UseFormReturn<WorkoutField>["formState"]["errors"];
-  workoutSetIdList: string[];
+  isValid: boolean;
+  recordIdList: string[];
   isLastField: boolean;
-  appendWorkoutSetField: () => void;
-  removeWorkoutSetField: (_index: number) => void;
+  appendRecordField: () => void;
+  removeRecordField: (_index: number) => void;
   handleSubmit: () => Promise<Result<null>>;
 };
 export const useWorkoutForm: UseWorkoutForm = (props) => {
@@ -52,27 +53,29 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     defaultValues: props.defaultValues ?? defaultValues,
     mode: "all",
   });
-
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "workoutSets",
+    name: "records",
   });
 
-  const isLastField = fields.length === 1;
+  const isLastField = useMemo(() => fields.length === 1, [fields.length]);
 
-  const workoutSetIdList = fields.map((field) => field.id);
+  const recordIdList = useMemo(() => fields.map((field) => field.id), [fields]);
 
-  const appendWorkoutSetField = () => {
-    append(defaultValues.workoutSets);
-  };
+  const appendRecordField = useCallback(() => {
+    append(defaultValues.records);
+  }, [append]);
 
-  const removeWorkoutSetField = (index: number) => {
-    if (isLastField) {
-      return;
-    }
+  const removeRecordField = useCallback(
+    (index: number) => {
+      if (isLastField) {
+        return;
+      }
 
-    remove(index);
-  };
+      remove(index);
+    },
+    [isLastField, remove]
+  );
 
   const handleSubmit = async (): Promise<Result<null>> => {
     const fieldValue = form.getValues();
@@ -106,10 +109,11 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
   return {
     register: form.register,
     errors: form.formState.errors,
-    workoutSetIdList,
+    isValid: form.formState.isValid,
+    recordIdList,
     isLastField,
-    appendWorkoutSetField,
-    removeWorkoutSetField,
+    appendRecordField,
+    removeRecordField,
     handleSubmit,
   };
 };
@@ -126,12 +130,12 @@ export const toWorkout: ToWorkout = async ({
   date,
   getExerciseById,
 }) => {
-  const workoutSets = await Promise.all(
-    fieldValue.workoutSets.map((workoutSet) =>
+  const records = await Promise.all(
+    fieldValue.records.map((record) =>
       (async () => ({
-        exercise: await getExerciseById(workoutSet.exerciseId),
-        weight: parseInt(workoutSet.weight),
-        repetition: parseInt(workoutSet.repetition),
+        exercise: await getExerciseById(record.exerciseId),
+        weight: parseInt(record.weight),
+        repetition: parseInt(record.repetition),
       }))()
     )
   );
@@ -139,22 +143,22 @@ export const toWorkout: ToWorkout = async ({
   return {
     id: ulid(),
     trainee,
-    workoutSets,
+    records,
     date,
     memo: fieldValue.memo,
   };
 };
 
 class ValidRegisterWorkoutField {
-  public workoutSets: WorkoutField["workoutSets"];
+  public records: WorkoutField["records"];
   public memo: WorkoutField["memo"];
 
   public constructor(props: WorkoutField) {
-    const isWeightNumericString = !props.workoutSets.some((workoutSet) =>
-      Number.isNaN(parseInt(workoutSet.weight))
+    const isWeightNumericString = !props.records.some((record) =>
+      Number.isNaN(parseInt(record.weight))
     );
-    const isRepetitionNumericString = !props.workoutSets.some((workoutSet) =>
-      Number.isNaN(parseInt(workoutSet.repetition))
+    const isRepetitionNumericString = !props.records.some((record) =>
+      Number.isNaN(parseInt(record.repetition))
     );
 
     if (!isWeightNumericString) {
@@ -164,11 +168,9 @@ class ValidRegisterWorkoutField {
       throw new Error("回数に不正な値が設定されています");
     }
 
-    const weights = props.workoutSets.map((workoutSet) =>
-      parseInt(workoutSet.weight)
-    );
-    const repetitions = props.workoutSets.map((workoutSet) =>
-      parseInt(workoutSet.repetition)
+    const weights = props.records.map((record) => parseInt(record.weight));
+    const repetitions = props.records.map((record) =>
+      parseInt(record.repetition)
     );
 
     if (weights.some((weight) => weight < 0)) {
@@ -178,9 +180,7 @@ class ValidRegisterWorkoutField {
       throw new Error("回数に負の値は設定できません");
     }
 
-    this.workoutSets = props.workoutSets;
+    this.records = props.records;
     this.memo = props.memo;
   }
 }
-// type FromWorkout = (_props: Workout) => RegisterWorkoutField
-// type fromWorkoutMenu: (_props: WorkoutMenu) => RegisterWorkoutField;
