@@ -8,6 +8,7 @@ import {
   FormErrorMessage,
   Textarea,
   Spinner,
+  useToast,
 } from "@chakra-ui/react";
 import { FC, FormEventHandler, MouseEventHandler, useState } from "react";
 import { useWorkoutForm } from "../use-workout-form";
@@ -21,8 +22,9 @@ type Props = {
   trainee: Trainee;
   date: Date;
   getExerciseById: (_id: string) => Promise<Exercise>;
+  redirectToEditPage: () => void;
 };
-export const RegisterWorkout: FC<Props> = (props) => {
+export const RegisterWorkoutForm: FC<Props> = (props) => {
   const {
     register,
     errors,
@@ -31,15 +33,15 @@ export const RegisterWorkout: FC<Props> = (props) => {
     isLastField,
     appendRecordField,
     removeRecordField,
-    handleSubmit,
+    submit,
   } = useWorkoutForm({
     trainee: props.trainee,
     date: props.date,
     getExerciseById: props.getExerciseById,
     registerWorkout: props.registerWorkout,
   });
-
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   const handleAppend: MouseEventHandler<HTMLButtonElement> = (_e) => {
     appendRecordField();
@@ -49,21 +51,26 @@ export const RegisterWorkout: FC<Props> = (props) => {
     (_e) => {
       removeRecordField(index);
     };
-  const handleClickSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
 
     setIsLoading(true);
-    const result = await handleSubmit();
+    const result = await submit();
     setIsLoading(false);
 
     if (!result.isSuccess) {
-      // TODO: トーストとか出す
-      console.log(result.error);
+      toast({
+        title: result.error.message,
+        status: "error",
+        isClosable: true,
+      });
+    } else {
+      props.redirectToEditPage();
     }
   };
 
   return (
-    <form onSubmit={handleClickSubmit}>
+    <form onSubmit={handleSubmit}>
       <Stack direction="column">
         {recordIdList.map((id, index) => (
           <Stack key={id} direction="row">

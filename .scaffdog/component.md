@@ -35,7 +35,11 @@ const componentMeta: Meta = {
 export default componentMeta;
 
 const Template: Story = {
-  render: (props: Props) => <{{ inputs.component | pascal }} {...props} />,
+  render: (props: Props) => {
+    const args: Props = {}
+
+    return <{{ inputs.component | pascal }} {...args} />
+  },
 };
 
 export const Default: Story = {

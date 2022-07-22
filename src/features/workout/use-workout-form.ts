@@ -46,7 +46,7 @@ type UseWorkoutForm = (_props: {
   isLastField: boolean;
   appendRecordField: () => void;
   removeRecordField: (_index: number) => void;
-  handleSubmit: () => Promise<Result<null>>;
+  submit: () => Promise<Result<null>>;
 };
 export const useWorkoutForm: UseWorkoutForm = (props) => {
   const form = useForm<WorkoutField>({
@@ -77,7 +77,7 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     [isLastField, remove]
   );
 
-  const handleSubmit = async (): Promise<Result<null>> => {
+  const submit = async (): Promise<Result<null>> => {
     const fieldValue = form.getValues();
 
     try {
@@ -90,7 +90,9 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
         getExerciseById: props.getExerciseById,
       });
 
-      await props.registerWorkout(workout);
+      await form.handleSubmit(async () => {
+        await props.registerWorkout(workout);
+      })();
 
       return {
         isSuccess: true,
@@ -100,7 +102,10 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
       return {
         isSuccess: false,
         error: {
-          message: error instanceof Error ? error.message : "internal error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "不明なエラーが発生しました",
         },
       };
     }
@@ -114,7 +119,7 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     isLastField,
     appendRecordField,
     removeRecordField,
-    handleSubmit,
+    submit,
   };
 };
 
