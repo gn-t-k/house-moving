@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { ulid } from "ulid";
 import { Muscle } from "../muscle/muscle";
@@ -56,9 +56,7 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     name: "targets",
   });
 
-  useEffect(() => {
-    // TODO: setErrorで、割合のエラーをセット/クリアする処理
-  }, []);
+  // TODO: totalRatioみたいな不可視のフィールド増やす？
 
   const isLastField = useMemo(() => fields.length === 1, [fields.length]);
 
