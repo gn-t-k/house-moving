@@ -49,12 +49,18 @@ type UseWorkoutForm = (_props: {
   submit: () => Promise<Result<null>>;
 };
 export const useWorkoutForm: UseWorkoutForm = (props) => {
-  const form = useForm<WorkoutField>({
+  const {
+    register,
+    formState: { isValid, errors },
+    control,
+    getValues,
+    handleSubmit,
+  } = useForm<WorkoutField>({
     defaultValues: props.defaultValues ?? defaultValues,
     mode: "all",
   });
   const { fields, append, remove } = useFieldArray({
-    control: form.control,
+    control,
     name: "records",
   });
 
@@ -63,7 +69,7 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
   const recordIdList = useMemo(() => fields.map((field) => field.id), [fields]);
 
   const appendRecordField = useCallback(() => {
-    append(defaultValues.records);
+    append(defaultValues.records[0]);
   }, [append]);
 
   const removeRecordField = useCallback(
@@ -77,11 +83,11 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     [isLastField, remove]
   );
 
-  const submit = async (): Promise<Result<null>> => {
-    const fieldValue = form.getValues();
+  const submit = useCallback(async (): Promise<Result<null>> => {
+    const fieldValue = getValues();
 
     try {
-      const validFieldValue = new ValidRegisterWorkoutField(fieldValue);
+      const validFieldValue = new ValidWorkoutField(fieldValue);
 
       const workout = await toWorkout({
         fieldValue: validFieldValue,
@@ -90,7 +96,7 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
         getExerciseById: props.getExerciseById,
       });
 
-      await form.handleSubmit(async () => {
+      await handleSubmit(async () => {
         await props.registerWorkout(workout);
       })();
 
@@ -109,12 +115,12 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
         },
       };
     }
-  };
+  }, [getValues, handleSubmit, props]);
 
   return {
-    register: form.register,
-    errors: form.formState.errors,
-    isValid: form.formState.isValid,
+    register,
+    errors,
+    isValid,
     recordIdList,
     isLastField,
     appendRecordField,
@@ -124,7 +130,7 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
 };
 
 type ToWorkout = (_props: {
-  fieldValue: ValidRegisterWorkoutField;
+  fieldValue: ValidWorkoutField;
   trainee: Trainee;
   date: Date;
   getExerciseById: (_id: string) => Promise<Exercise>;
@@ -154,16 +160,16 @@ export const toWorkout: ToWorkout = async ({
   };
 };
 
-class ValidRegisterWorkoutField {
+class ValidWorkoutField {
   public records: WorkoutField["records"];
   public memo: WorkoutField["memo"];
 
   public constructor(props: WorkoutField) {
-    const isWeightNumericString = !props.records.some((record) =>
-      Number.isNaN(parseInt(record.weight))
+    const isWeightNumericString = !props.records.some(
+      (record) => !/^[0-9]+$/.test(record.weight)
     );
-    const isRepetitionNumericString = !props.records.some((record) =>
-      Number.isNaN(parseInt(record.repetition))
+    const isRepetitionNumericString = !props.records.some(
+      (record) => !/^[0-9]+$/.test(record.repetition)
     );
 
     if (!isWeightNumericString) {

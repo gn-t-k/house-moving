@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ulid } from "ulid";
 import { Muscle } from "./muscle";
@@ -22,18 +23,17 @@ type UseMuscleForm = (_props: {
   submit: () => Promise<Result<null>>;
 };
 export const useMuscleForm: UseMuscleForm = (props) => {
-  const form = useForm<MuscleField>({
-    defaultValues: props.defaultValues ?? defaultValues,
-    mode: "all",
-  });
   const {
     register,
     formState: { errors, isValid },
     handleSubmit,
     getValues,
-  } = form;
+  } = useForm<MuscleField>({
+    defaultValues: props.defaultValues ?? defaultValues,
+    mode: "all",
+  });
 
-  const submit = async (): Promise<Result<null>> => {
+  const submit = useCallback(async (): Promise<Result<null>> => {
     const fieldValue = getValues();
 
     try {
@@ -66,7 +66,7 @@ export const useMuscleForm: UseMuscleForm = (props) => {
         },
       };
     }
-  };
+  }, [getValues, handleSubmit, props]);
 
   return {
     register,
