@@ -45,6 +45,7 @@ export const RegisterExerciseModal: FC<Props> = ({
     isValid,
     targetIdList,
     isLastField,
+    isTargetErrorExist,
     appendTargetField,
     removeTargetField,
     submit,
@@ -139,7 +140,7 @@ export const RegisterExerciseModal: FC<Props> = ({
                       </FormErrorMessage>
                     </FormControl>
                     <FormControl>
-                      <FormLabel>割合</FormLabel>
+                      <FormLabel>種目における部位{index + 1}の割合</FormLabel>
                       <InputGroup>
                         <Input
                           {...register(`targets.${index}.ratio`, {
@@ -163,7 +164,9 @@ export const RegisterExerciseModal: FC<Props> = ({
               <FormErrorMessage>
                 {errors.targets?.[0]?.ratio?.message}
               </FormErrorMessage>
-              <Button onClick={handleAppend}>追加</Button>
+              <Button onClick={handleAppend} disabled={!isTargetErrorExist}>
+                追加
+              </Button>
             </FormControl>
           </ModalBody>
           <ModalFooter>

@@ -26,6 +26,7 @@ export const defaultValues: ExerciseField = {
   memo: "",
 };
 
+// FIXME: 割合の合計が100じゃなかった場合をフォームエラーにしたい（現状Resultで返している）
 type UseExerciseForm = (_props: {
   defaultValues?: ExerciseField;
   getMuscleById: (_id: string) => Promise<Muscle>;
@@ -36,6 +37,7 @@ type UseExerciseForm = (_props: {
   isValid: boolean;
   targetIdList: string[];
   isLastField: boolean;
+  isTargetErrorExist: boolean;
   appendTargetField: () => void;
   removeTargetField: (_index: number) => void;
   submit: () => Promise<Result<null>>;
@@ -56,9 +58,22 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     name: "targets",
   });
 
-  // TODO: totalRatioみたいな不可視のフィールド増やす？
-
   const isLastField = useMemo(() => fields.length === 1, [fields.length]);
+
+  const isTargetErrorExist = useMemo(() => {
+    if (errors.targets === undefined) {
+      return true;
+    }
+
+    const isTargetNameErrorExist = errors.targets.some(
+      (target) => target.muscleId !== undefined
+    );
+    const isTargetRatioErrorExist = errors.targets.some(
+      (target) => target.ratio !== undefined
+    );
+
+    return !isTargetNameErrorExist && isTargetRatioErrorExist;
+  }, [errors.targets]);
 
   const targetIdList = useMemo(() => fields.map((field) => field.id), [fields]);
 
@@ -115,6 +130,7 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     isValid,
     targetIdList,
     isLastField,
+    isTargetErrorExist,
     appendTargetField,
     removeTargetField,
     submit,
