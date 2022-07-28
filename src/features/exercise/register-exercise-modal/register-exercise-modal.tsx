@@ -27,14 +27,12 @@ type Props = {
   muscles: Muscle[];
   isOpen: boolean;
   onClose: () => void;
-  getMuscleById: (_id: string) => Promise<Muscle>;
   registerExercise: (_exercise: Exercise) => Promise<void>;
 };
 export const RegisterExerciseModal: FC<Props> = ({
   muscles,
   isOpen,
   onClose,
-  getMuscleById,
   registerExercise,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,11 +44,13 @@ export const RegisterExerciseModal: FC<Props> = ({
     targetIdList,
     isLastField,
     isTargetErrorExist,
+    muscleOptions,
+    isLastMuscleOption,
     appendTargetField,
     removeTargetField,
     submit,
   } = useExerciseForm({
-    getMuscleById,
+    muscles,
     registerExercise,
   });
 
@@ -129,8 +129,12 @@ export const RegisterExerciseModal: FC<Props> = ({
                           required: { value: true, message: "入力必須です" },
                         })}
                       >
-                        {muscles.map((muscle) => (
-                          <option key={muscle.id} value={muscle.id}>
+                        {muscleOptions[index].map((muscle) => (
+                          <option
+                            key={muscle.id}
+                            value={muscle.id}
+                            data-testid={`${index}-${muscle.id}`}
+                          >
                             {muscle.name}
                           </option>
                         ))}
@@ -164,7 +168,10 @@ export const RegisterExerciseModal: FC<Props> = ({
               <FormErrorMessage>
                 {errors.targets?.[0]?.ratio?.message}
               </FormErrorMessage>
-              <Button onClick={handleAppend} disabled={!isTargetErrorExist}>
+              <Button
+                onClick={handleAppend}
+                disabled={isTargetErrorExist || isLastMuscleOption}
+              >
                 追加
               </Button>
             </FormControl>
@@ -172,7 +179,7 @@ export const RegisterExerciseModal: FC<Props> = ({
           <ModalFooter>
             <Button onClick={handleCancel}>キャンセル</Button>
             <Button type="submit" isDisabled={!isValid}>
-              {isLoading ? <Spinner /> : "鍛えたい部位を登録"}
+              {isLoading ? <Spinner /> : "種目を登録"}
             </Button>
           </ModalFooter>
         </form>

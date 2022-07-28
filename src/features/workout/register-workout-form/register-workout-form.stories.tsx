@@ -115,13 +115,6 @@ const Wrapper: FC<Partial<Props>> = (props) => {
 
     action("registerWorkout")(workout);
   };
-  const getExerciseById = async (id: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    action("getExerciseById")(id);
-
-    return exercises[0];
-  };
   const redirectToEditPage = () => {
     action("redirectToEditPage")();
   };
@@ -134,7 +127,6 @@ const Wrapper: FC<Partial<Props>> = (props) => {
       name: "太郎",
     },
     date: props.date ?? new Date(2022, 6, 19),
-    getExerciseById: props.getExerciseById ?? getExerciseById,
     redirectToEditPage: props.redirectToEditPage ?? redirectToEditPage,
   };
 
@@ -149,7 +141,7 @@ export const Default: Story = {
   ...Template,
 };
 
-const inputExercise = async (value: string) => {
+const selectExercise = async (value: string) => {
   const exerciseSelect = screen.getByLabelText<HTMLSelectElement>("種目");
   const exerciseOption = screen.getByRole("option", { name: value });
 
@@ -177,7 +169,7 @@ const clickSubmitButton = async () => {
 export const 必須項目を入力: Story = {
   ...Default,
   play: async () => {
-    await inputExercise("ベンチプレス");
+    await selectExercise("ベンチプレス");
     await inputWeight("100");
     await inputRepetition("5");
   },
@@ -186,7 +178,7 @@ export const 必須項目を入力: Story = {
 export const 必須項目を入力してワークアウトを登録: Story = {
   ...Default,
   play: async () => {
-    await inputExercise("ベンチプレス");
+    await selectExercise("ベンチプレス");
     await inputWeight("100");
     await inputRepetition("5");
     await clickSubmitButton();
@@ -209,7 +201,7 @@ export const 登録に失敗する場合: Story = {
     return <Wrapper registerWorkout={registerWorkout} />;
   },
   play: async () => {
-    await inputExercise("ベンチプレス");
+    await selectExercise("ベンチプレス");
     await inputWeight("100");
     await inputRepetition("5");
     await clickSubmitButton();

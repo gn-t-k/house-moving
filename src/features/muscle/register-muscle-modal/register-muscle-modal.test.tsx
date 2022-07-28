@@ -7,18 +7,17 @@ describe("RegisterMuscleModal", () => {
   const Stories = composeStories(stories);
 
   describe("初期状態", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       render(<Stories.Default />);
-    });
 
-    test("「鍛えたい部位を登録」ボタンがdisabledになっている（部位名未入力のため）", async () => {
       const openModalButton = screen.getByText<HTMLButtonElement>("open modal");
 
       await userEvent.click(openModalButton);
+    });
 
-      const muscleNameInput = await screen.getByText<HTMLInputElement>(
-        "鍛えたい部位を登録"
-      );
+    test("「鍛えたい部位を登録」ボタンがdisabledになっている（部位名未入力のため）", async () => {
+      const muscleNameInput =
+        screen.getByText<HTMLInputElement>("鍛えたい部位を登録");
 
       expect(muscleNameInput.disabled).toBe(true);
     });

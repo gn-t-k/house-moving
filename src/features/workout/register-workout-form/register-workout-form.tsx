@@ -21,7 +21,6 @@ type Props = {
   registerWorkout: (_workout: Workout) => Promise<void>;
   trainee: Trainee;
   date: Date;
-  getExerciseById: (_id: string) => Promise<Exercise>;
   redirectToEditPage: () => void;
 };
 export const RegisterWorkoutForm: FC<Props> = (props) => {
@@ -31,13 +30,16 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
     isValid,
     recordIdList,
     isLastField,
+    isRecordErrorExist,
+    exerciseOptions,
+    isLastExerciseOption,
     appendRecordField,
     removeRecordField,
     submit,
   } = useWorkoutForm({
     trainee: props.trainee,
     date: props.date,
-    getExerciseById: props.getExerciseById,
+    exercises: props.exercises,
     registerWorkout: props.registerWorkout,
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +87,7 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
                     required: { value: true, message: "入力必須です" },
                   })}
                 >
-                  {props.exercises.map((exercise) => (
+                  {exerciseOptions[index].map((exercise) => (
                     <option key={exercise.id} value={exercise.id}>
                       {exercise.name}
                     </option>
@@ -141,7 +143,12 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
             </Button>
           </Stack>
         ))}
-        <Button onClick={handleAppend}>追加</Button>
+        <Button
+          onClick={handleAppend}
+          disabled={isRecordErrorExist || isLastExerciseOption}
+        >
+          追加
+        </Button>
         <FormControl>
           <FormLabel>メモ</FormLabel>
           <Textarea {...register("memo")} />

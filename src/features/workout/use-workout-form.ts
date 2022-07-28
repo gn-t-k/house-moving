@@ -31,19 +31,17 @@ type UseWorkoutForm = (_props: {
   defaultValues?: WorkoutField;
   trainee: Trainee;
   date: Date;
-  getExerciseById: (_id: string) => Promise<Exercise>;
+  exercises: Exercise[];
   registerWorkout: (_workout: Workout) => Promise<void>;
 }) => {
-  /**
-   * memo:
-   * react-hook-formの型をhooksに隠蔽してしまってもよいが、
-   * そうするとJSXがかなり読みにくくなってしまうため、あえてそのまま露出させている
-   */
   register: UseFormReturn<WorkoutField>["register"];
   errors: UseFormReturn<WorkoutField>["formState"]["errors"];
   isValid: boolean;
   recordIdList: string[];
   isLastField: boolean;
+  isRecordErrorExist: boolean;
+  exerciseOptions: Exercise[][];
+  isLastExerciseOption: boolean;
   appendRecordField: () => void;
   removeRecordField: (_index: number) => void;
   submit: () => Promise<Result<null>>;
@@ -67,6 +65,45 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
   const isLastField = useMemo(() => fields.length === 1, [fields.length]);
 
   const recordIdList = useMemo(() => fields.map((field) => field.id), [fields]);
+
+  const exerciseOptions: Exercise[][] = useMemo(() => {
+    const selectedExerciseIds = fields
+      .map((field) => field.exerciseId)
+      .filter((id) => id !== "");
+
+    return selectedExerciseIds.length === 0
+      ? [props.exercises]
+      : selectedExerciseIds.reduce(
+          (acc: Exercise[][], cur: string) => [
+            ...acc,
+            acc.slice(-1)[0].filter((exercise) => exercise.id !== cur),
+          ],
+          [props.exercises]
+        );
+  }, [fields, props.exercises]);
+
+  const isLastExerciseOption = useMemo(
+    () => fields.length === props.exercises.length,
+    [fields.length, props.exercises.length]
+  );
+
+  const isRecordErrorExist = useMemo(() => {
+    if (errors.records === undefined) {
+      return false;
+    }
+
+    const isExerciseErrorExist = errors.records.some(
+      (record) => record.exerciseId !== undefined
+    );
+    const isWeightErrorExist = errors.records.some(
+      (record) => record.weight !== undefined
+    );
+    const isRepetitionErrorExist = errors.records.some(
+      (record) => record.repetition !== undefined
+    );
+
+    return isExerciseErrorExist || isWeightErrorExist || isRepetitionErrorExist;
+  }, [errors.records]);
 
   const appendRecordField = useCallback(() => {
     append(defaultValues.records[0]);
@@ -93,7 +130,7 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
         fieldValue: validFieldValue,
         trainee: props.trainee,
         date: props.date,
-        getExerciseById: props.getExerciseById,
+        exercises: props.exercises,
       });
 
       await handleSubmit(async () => {
@@ -123,6 +160,9 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     isValid,
     recordIdList,
     isLastField,
+    isRecordErrorExist,
+    exerciseOptions,
+    isLastExerciseOption,
     appendRecordField,
     removeRecordField,
     submit,
@@ -133,22 +173,30 @@ type ToWorkout = (_props: {
   fieldValue: ValidWorkoutField;
   trainee: Trainee;
   date: Date;
-  getExerciseById: (_id: string) => Promise<Exercise>;
+  exercises: Exercise[];
 }) => Promise<Workout>;
 export const toWorkout: ToWorkout = async ({
   fieldValue,
   trainee,
   date,
-  getExerciseById,
+  exercises,
 }) => {
   const records = await Promise.all(
-    fieldValue.records.map((record) =>
-      (async () => ({
-        exercise: await getExerciseById(record.exerciseId),
-        weight: parseInt(record.weight),
-        repetition: parseInt(record.repetition),
-      }))()
-    )
+    fieldValue.records.flatMap((record) => {
+      const exercise = exercises.find(
+        (exercise) => exercise.id === record.exerciseId
+      );
+
+      return exercise === undefined
+        ? []
+        : [
+            {
+              exercise,
+              weight: parseInt(record.weight),
+              repetition: parseInt(record.repetition),
+            },
+          ];
+    })
   );
 
   return {

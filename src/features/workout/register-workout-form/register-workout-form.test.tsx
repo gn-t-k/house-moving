@@ -10,7 +10,7 @@ describe("RegisterWorkoutForm", () => {
       render(<Stories.Default />);
     });
 
-    test("「削除」ボタンがdisabledになっている（要素が1つだけ）", () => {
+    test("「削除」ボタンがdisabledになっている（削除すると入力項目がなくなってしまうため）", async () => {
       const deleteButton = screen.getByText<HTMLButtonElement>("削除");
 
       expect(deleteButton.disabled).toBe(true);
@@ -26,34 +26,6 @@ describe("RegisterWorkoutForm", () => {
 
   describe("必須項目を入力してワークアウトを登録", () => {
     const registerWorkout = jest.fn();
-    const getExerciseById = async (_id: string) => ({
-      id: "exercise-1",
-      name: "ベンチプレス",
-      targets: [
-        {
-          muscle: {
-            id: "muscle-1",
-            name: "大胸筋",
-          },
-          ratio: 0.5,
-        },
-        {
-          muscle: {
-            id: "muscle-2",
-            name: "上腕三頭筋",
-          },
-          ratio: 0.3,
-        },
-        {
-          muscle: {
-            id: "muscle-3",
-            name: "三角筋前部",
-          },
-          ratio: 0.2,
-        },
-      ],
-      memo: "",
-    });
     const redirectToEditPage = jest.fn();
 
     beforeEach(async () => {
@@ -62,7 +34,6 @@ describe("RegisterWorkoutForm", () => {
 
       const { container } = render(
         <Stories.必須項目を入力してワークアウトを登録
-          getExerciseById={getExerciseById}
           registerWorkout={registerWorkout}
           redirectToEditPage={redirectToEditPage}
         />

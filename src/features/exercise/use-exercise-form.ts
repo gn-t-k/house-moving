@@ -29,7 +29,7 @@ export const defaultValues: ExerciseField = {
 // FIXME: 割合の合計が100じゃなかった場合をフォームエラーにしたい（現状Resultで返している）
 type UseExerciseForm = (_props: {
   defaultValues?: ExerciseField;
-  getMuscleById: (_id: string) => Promise<Muscle>;
+  muscles: Muscle[];
   registerExercise: (_exercise: Exercise) => Promise<void>;
 }) => {
   register: UseFormReturn<ExerciseField>["register"];
@@ -38,6 +38,8 @@ type UseExerciseForm = (_props: {
   targetIdList: string[];
   isLastField: boolean;
   isTargetErrorExist: boolean;
+  muscleOptions: Muscle[][];
+  isLastMuscleOption: boolean;
   appendTargetField: () => void;
   removeTargetField: (_index: number) => void;
   submit: () => Promise<Result<null>>;
@@ -62,20 +64,41 @@ export const useExerciseForm: UseExerciseForm = (props) => {
 
   const isTargetErrorExist = useMemo(() => {
     if (errors.targets === undefined) {
-      return true;
+      return false;
     }
 
-    const isTargetNameErrorExist = errors.targets.some(
+    const isNameErrorExist = errors.targets.some(
       (target) => target.muscleId !== undefined
     );
-    const isTargetRatioErrorExist = errors.targets.some(
+    const isRatioErrorExist = errors.targets.some(
       (target) => target.ratio !== undefined
     );
 
-    return !isTargetNameErrorExist && isTargetRatioErrorExist;
+    return isNameErrorExist || isRatioErrorExist;
   }, [errors.targets]);
 
   const targetIdList = useMemo(() => fields.map((field) => field.id), [fields]);
+
+  const muscleOptions: Muscle[][] = useMemo(() => {
+    const selectedMuscleIds = fields
+      .map((field) => field.muscleId)
+      .filter((id) => id !== "");
+
+    return selectedMuscleIds.length === 0
+      ? [props.muscles]
+      : selectedMuscleIds.reduce(
+          (acc: Muscle[][], cur: string) => [
+            ...acc,
+            acc.slice(-1)[0].filter((muscle) => muscle.id !== cur),
+          ],
+          [props.muscles]
+        );
+  }, [fields, props.muscles]);
+
+  const isLastMuscleOption = useMemo(
+    () => fields.length === props.muscles.length,
+    [fields.length, props.muscles.length]
+  );
 
   const appendTargetField = useCallback(() => {
     append(defaultValues.targets[0]);
@@ -98,9 +121,9 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     try {
       const validExerciseField = new ValidExerciseField(fieldValue);
 
-      const exercise = await toExercise({
+      const exercise = toExercise({
         fieldValue: validExerciseField,
-        getMuscleById: props.getMuscleById,
+        muscles: props.muscles,
       });
 
       await handleSubmit(async () => {
@@ -131,6 +154,8 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     targetIdList,
     isLastField,
     isTargetErrorExist,
+    muscleOptions,
+    isLastMuscleOption,
     appendTargetField,
     removeTargetField,
     submit,
@@ -139,17 +164,21 @@ export const useExerciseForm: UseExerciseForm = (props) => {
 
 type ToExercise = (_props: {
   fieldValue: ValidExerciseField;
-  getMuscleById: (_id: string) => Promise<Muscle>;
-}) => Promise<Exercise>;
-const toExercise: ToExercise = async ({ fieldValue, getMuscleById }) => {
-  const targets = await Promise.all(
-    fieldValue.targets.map((target) =>
-      (async () => ({
-        muscle: await getMuscleById(target.muscleId),
-        ratio: parseInt(target.ratio),
-      }))()
-    )
-  );
+  muscles: Muscle[];
+}) => Exercise;
+const toExercise: ToExercise = ({ fieldValue, muscles }) => {
+  const targets = fieldValue.targets.flatMap((target) => {
+    const muscle = muscles.find((muscle) => muscle.id === target.muscleId);
+
+    return muscle === undefined
+      ? []
+      : [
+          {
+            muscle,
+            ratio: parseInt(target.ratio),
+          },
+        ];
+  });
 
   return {
     id: ulid(),
