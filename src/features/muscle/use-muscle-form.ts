@@ -44,7 +44,7 @@ export const useMuscleForm: UseMuscleForm = (props) => {
 
       const isSameNameMuscleExist = await props.isSameNameMuscleExist(muscle);
       if (isSameNameMuscleExist) {
-        throw new Error("入力された名前の部位はすでに登録されています");
+        throw new Error(`部位「${muscle.name}」はすでに登録されています`);
       }
 
       await handleSubmit(async () => {

@@ -141,21 +141,27 @@ export const Default: Story = {
   ...Template,
 };
 
-const selectExercise = async (value: string) => {
-  const exerciseSelect = screen.getByLabelText<HTMLSelectElement>("種目");
+const selectExercise = async (value: string, index: number) => {
+  const exerciseSelect = screen.getByRole("combobox", {
+    name: `種目${index + 1}`,
+  });
   const exerciseOption = screen.getByRole("option", { name: value });
 
   await userEvent.selectOptions(exerciseSelect, exerciseOption);
 };
 
-const inputWeight = async (value: string) => {
-  const weightInput = screen.getByLabelText<HTMLInputElement>("重量");
+const inputWeight = async (value: string, index: number) => {
+  const weightInput = screen.getByRole("textbox", {
+    name: `種目${index + 1}の重量`,
+  });
 
   await userEvent.type(weightInput, value);
 };
 
-const inputRepetition = async (value: string) => {
-  const repetitionInput = screen.getByLabelText<HTMLInputElement>("回数");
+const inputRepetition = async (value: string, index: number) => {
+  const repetitionInput = screen.getByRole("textbox", {
+    name: `種目${index + 1}の回数`,
+  });
 
   await userEvent.type(repetitionInput, value);
 };
@@ -169,18 +175,18 @@ const clickSubmitButton = async () => {
 export const 必須項目を入力: Story = {
   ...Default,
   play: async () => {
-    await selectExercise("ベンチプレス");
-    await inputWeight("100");
-    await inputRepetition("5");
+    await selectExercise("ベンチプレス", 0);
+    await inputWeight("100", 0);
+    await inputRepetition("5", 0);
   },
 };
 
 export const 必須項目を入力してワークアウトを登録: Story = {
   ...Default,
   play: async () => {
-    await selectExercise("ベンチプレス");
-    await inputWeight("100");
-    await inputRepetition("5");
+    await selectExercise("ベンチプレス", 0);
+    await inputWeight("100", 0);
+    await inputRepetition("5", 0);
     await clickSubmitButton();
   },
 };
@@ -188,7 +194,7 @@ export const 必須項目を入力してワークアウトを登録: Story = {
 export const 重量に不正な値を入力: Story = {
   ...Default,
   play: async () => {
-    await inputWeight("不正な値");
+    await inputWeight("不正な値", 0);
   },
 };
 
@@ -201,9 +207,9 @@ export const 登録に失敗する場合: Story = {
     return <Wrapper registerWorkout={registerWorkout} />;
   },
   play: async () => {
-    await selectExercise("ベンチプレス");
-    await inputWeight("100");
-    await inputRepetition("5");
+    await selectExercise("ベンチプレス", 0);
+    await inputWeight("100", 0);
+    await inputRepetition("5", 0);
     await clickSubmitButton();
   },
 };

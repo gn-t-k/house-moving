@@ -16,14 +16,13 @@ export type WorkoutField = {
   memo: string;
 };
 
+const defaultRecordValue: WorkoutField["records"][number] = {
+  exerciseId: "",
+  weight: "",
+  repetition: "",
+};
 export const defaultValues: WorkoutField = {
-  records: [
-    {
-      exerciseId: "",
-      weight: "",
-      repetition: "",
-    },
-  ],
+  records: [defaultRecordValue],
   memo: "",
 };
 
@@ -38,12 +37,11 @@ type UseWorkoutForm = (_props: {
   errors: UseFormReturn<WorkoutField>["formState"]["errors"];
   isValid: boolean;
   recordIdList: string[];
-  isLastField: boolean;
-  isRecordErrorExist: boolean;
   exerciseOptions: Exercise[][];
-  isLastExerciseOption: boolean;
   appendRecordField: () => void;
   removeRecordField: (_index: number) => void;
+  canAppendRecordField: boolean;
+  canRemoveRecordField: boolean;
   submit: () => Promise<Result<null>>;
 };
 export const useWorkoutForm: UseWorkoutForm = (props) => {
@@ -74,39 +72,51 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     return selectedExerciseIds.length === 0
       ? [props.exercises]
       : selectedExerciseIds.reduce(
-          (acc: Exercise[][], cur: string) => [
-            ...acc,
-            acc.slice(-1)[0].filter((exercise) => exercise.id !== cur),
-          ],
+          (acc: Exercise[][], cur: string) => {
+            const prevOptions = acc.slice(-1)[0];
+
+            return prevOptions === undefined
+              ? [props.exercises]
+              : [...acc, prevOptions.filter((exercise) => exercise.id !== cur)];
+          },
           [props.exercises]
         );
   }, [fields, props.exercises]);
 
-  const isLastExerciseOption = useMemo(
-    () => fields.length === props.exercises.length,
-    [fields.length, props.exercises.length]
-  );
+  const canAppendRecordField = useMemo(() => {
+    const isLastExerciseOption = fields.length === props.exercises.length;
 
-  const isRecordErrorExist = useMemo(() => {
-    if (errors.records === undefined) {
-      return false;
-    }
+    const isRecordErrorExist = (() => {
+      if (errors.records === undefined) {
+        return false;
+      }
 
-    const isExerciseErrorExist = errors.records.some(
-      (record) => record.exerciseId !== undefined
-    );
-    const isWeightErrorExist = errors.records.some(
-      (record) => record.weight !== undefined
-    );
-    const isRepetitionErrorExist = errors.records.some(
-      (record) => record.repetition !== undefined
-    );
+      const isExerciseErrorExist = errors.records.some(
+        (record) => record.exerciseId !== undefined
+      );
+      const isWeightErrorExist = errors.records.some(
+        (record) => record.weight !== undefined
+      );
+      const isRepetitionErrorExist = errors.records.some(
+        (record) => record.repetition !== undefined
+      );
 
-    return isExerciseErrorExist || isWeightErrorExist || isRepetitionErrorExist;
-  }, [errors.records]);
+      return (
+        isExerciseErrorExist || isWeightErrorExist || isRepetitionErrorExist
+      );
+    })();
+
+    return !isLastExerciseOption && !isRecordErrorExist;
+  }, [errors.records, fields.length, props.exercises.length]);
+
+  const canRemoveRecordField = useMemo(() => {
+    const isLastField = fields.length === 1;
+
+    return !isLastField;
+  }, [fields.length]);
 
   const appendRecordField = useCallback(() => {
-    append(defaultValues.records[0]);
+    append(defaultRecordValue);
   }, [append]);
 
   const removeRecordField = useCallback(
@@ -159,12 +169,11 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     errors,
     isValid,
     recordIdList,
-    isLastField,
-    isRecordErrorExist,
     exerciseOptions,
-    isLastExerciseOption,
     appendRecordField,
     removeRecordField,
+    canAppendRecordField,
+    canRemoveRecordField,
     submit,
   };
 };

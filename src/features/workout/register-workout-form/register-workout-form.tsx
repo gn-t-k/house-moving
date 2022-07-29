@@ -29,12 +29,11 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
     errors,
     isValid,
     recordIdList,
-    isLastField,
-    isRecordErrorExist,
     exerciseOptions,
-    isLastExerciseOption,
     appendRecordField,
     removeRecordField,
+    canAppendRecordField,
+    canRemoveRecordField,
     submit,
   } = useWorkoutForm({
     trainee: props.trainee,
@@ -78,29 +77,37 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
           <Stack key={id} direction="row">
             <Stack direction="column">
               <FormControl
+                isRequired
                 isInvalid={errors.records?.[index]?.exerciseId !== undefined}
               >
-                <FormLabel>種目</FormLabel>
+                <FormLabel>種目{index + 1}</FormLabel>
                 <Select
                   placeholder="未選択"
                   {...register(`records.${index}.exerciseId`, {
                     required: { value: true, message: "入力必須です" },
                   })}
                 >
-                  {exerciseOptions[index].map((exercise) => (
-                    <option key={exercise.id} value={exercise.id}>
-                      {exercise.name}
-                    </option>
-                  ))}
+                  {(() => {
+                    const options = exerciseOptions[index];
+
+                    return options === undefined
+                      ? null
+                      : options.map((exercise) => (
+                          <option key={exercise.id} value={exercise.id}>
+                            {exercise.name}
+                          </option>
+                        ));
+                  })()}
                 </Select>
                 <FormErrorMessage>
                   {errors.records?.[index]?.exerciseId?.message}
                 </FormErrorMessage>
               </FormControl>
               <FormControl
+                isRequired
                 isInvalid={errors.records?.[index]?.weight !== undefined}
               >
-                <FormLabel>重量</FormLabel>
+                <FormLabel>種目{index + 1}の重量</FormLabel>
                 <Input
                   {...register(`records.${index}.weight`, {
                     required: {
@@ -118,9 +125,10 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
                 </FormErrorMessage>
               </FormControl>
               <FormControl
+                isRequired
                 isInvalid={errors.records?.[index]?.repetition !== undefined}
               >
-                <FormLabel>回数</FormLabel>
+                <FormLabel>種目{index + 1}の回数</FormLabel>
                 <Input
                   {...register(`records.${index}.repetition`, {
                     required: {
@@ -138,15 +146,15 @@ export const RegisterWorkoutForm: FC<Props> = (props) => {
                 </FormErrorMessage>
               </FormControl>
             </Stack>
-            <Button onClick={handleRemove(index)} disabled={isLastField}>
-              削除
+            <Button
+              onClick={handleRemove(index)}
+              disabled={!canRemoveRecordField}
+            >
+              種目{index + 1}を削除
             </Button>
           </Stack>
         ))}
-        <Button
-          onClick={handleAppend}
-          disabled={isRecordErrorExist || isLastExerciseOption}
-        >
+        <Button onClick={handleAppend} disabled={!canAppendRecordField}>
           追加
         </Button>
         <FormControl>

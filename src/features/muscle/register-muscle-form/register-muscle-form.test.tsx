@@ -1,7 +1,6 @@
 import { composeStories } from "@storybook/testing-react";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import * as stories from "././register-muscle-modal.stories";
+import * as stories from "./register-muscle-form.stories";
 
 describe("RegisterMuscleModal", () => {
   const Stories = composeStories(stories);
@@ -9,10 +8,6 @@ describe("RegisterMuscleModal", () => {
   describe("初期状態", () => {
     beforeEach(async () => {
       render(<Stories.Default />);
-
-      const openModalButton = screen.getByText<HTMLButtonElement>("open modal");
-
-      await userEvent.click(openModalButton);
     });
 
     test("「鍛えたい部位を登録」ボタンがdisabledになっている（部位名未入力のため）", async () => {

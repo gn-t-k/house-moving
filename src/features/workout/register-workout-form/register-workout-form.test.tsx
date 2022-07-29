@@ -11,7 +11,7 @@ describe("RegisterWorkoutForm", () => {
     });
 
     test("「削除」ボタンがdisabledになっている（削除すると入力項目がなくなってしまうため）", async () => {
-      const deleteButton = screen.getByText<HTMLButtonElement>("削除");
+      const deleteButton = screen.getByText<HTMLButtonElement>("種目1を削除");
 
       expect(deleteButton.disabled).toBe(true);
     });

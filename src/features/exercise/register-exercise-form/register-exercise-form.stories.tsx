@@ -1,24 +1,22 @@
-import { Button, useDisclosure } from "@chakra-ui/react";
 import { action } from "@storybook/addon-actions";
 import { ComponentMeta, ComponentStoryObj } from "@storybook/react";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ComponentProps, FC } from "react";
 import { Exercise } from "../exercise";
-import { RegisterExerciseModal } from "./register-exercise-modal";
+import { RegisterExerciseForm } from "./register-exercise-form";
 import { Muscle } from "@/features/muscle/muscle";
 
-type Meta = ComponentMeta<typeof RegisterExerciseModal>;
-type Props = ComponentProps<typeof RegisterExerciseModal>;
-type Story = ComponentStoryObj<typeof RegisterExerciseModal>;
+type Meta = ComponentMeta<typeof RegisterExerciseForm>;
+type Props = ComponentProps<typeof RegisterExerciseForm>;
+type Story = ComponentStoryObj<typeof RegisterExerciseForm>;
 
 const componentMeta: Meta = {
-  component: RegisterExerciseModal,
+  component: RegisterExerciseForm,
 };
 export default componentMeta;
 
 const Wrapper: FC<Partial<Props>> = (props) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const muscles: Muscle[] = [
     {
       id: "muscle-1",
@@ -38,47 +36,45 @@ const Wrapper: FC<Partial<Props>> = (props) => {
 
     action("registerExercise")(exercise);
   };
+  const cancel = action("cancel");
+  const isSameNameExerciseExist = async (exercise: Exercise) => {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    action("isSameNameExerciseExist")(exercise);
+
+    return false;
+  };
 
   const args: Props = {
     muscles: props.muscles ?? muscles,
-    isOpen: props.isOpen ?? isOpen,
-    onClose: props.onClose ?? onClose,
+    cancel: props.cancel ?? cancel,
     registerExercise: props.registerExercise ?? registerExercise,
+    isSameNameExerciseExist:
+      props.isSameNameExerciseExist ?? isSameNameExerciseExist,
   };
 
-  return (
-    <>
-      <Button onClick={onOpen}>open modal</Button>
-      <RegisterExerciseModal {...args} />
-    </>
-  );
-};
-
-const openModal = async () => {
-  const openModalButton = screen.getByText<HTMLButtonElement>("open modal");
-
-  await userEvent.click(openModalButton);
+  return <RegisterExerciseForm {...args} />;
 };
 
 const inputExercise = async (value: string) => {
-  const exerciseInput = screen.getByLabelText<HTMLInputElement>("種目名");
+  const exerciseInput = screen.getByRole("textbox", { name: "種目名" });
 
   await userEvent.type(exerciseInput, value);
 };
 
-const selectMuscle = async (id: string, index: number) => {
-  const muscleSelect = screen.getByLabelText<HTMLSelectElement>(
-    `部位${index + 1}`
-  );
-  const muscleOption = screen.getByTestId(`${index}-${id}`);
+const selectMuscle = async (value: string, index: number) => {
+  const muscleSelect = screen.getByRole("combobox", {
+    name: `部位${index + 1}`,
+  });
+  const muscleOption = screen.getByRole("option", { name: value });
 
   await userEvent.selectOptions(muscleSelect, muscleOption);
 };
 
 const inputRatio = async (value: string, index: number) => {
-  const ratioInput = screen.getByLabelText<HTMLInputElement>(
-    `種目における部位${index + 1}の割合`
-  );
+  const ratioInput = screen.getByRole("textbox", {
+    name: `種目における部位${index + 1}の割合`,
+  });
 
   await userEvent.type(ratioInput, value);
 };
@@ -90,9 +86,13 @@ const clickSubmitButton = async () => {
 };
 
 const clickAddButton = async () => {
-  const addButton = screen.getByText("追加");
+  const addButton = screen.getByText("部位を追加");
 
   await userEvent.click(addButton);
+};
+
+const offFocus = async () => {
+  await userEvent.tab();
 };
 
 const Template: Story = {
@@ -106,9 +106,8 @@ export const Default: Story = {
 export const 必須項目を入力: Story = {
   ...Default,
   play: async () => {
-    await openModal();
     await inputExercise("ベンチプレス");
-    await selectMuscle("muscle-1", 0);
+    await selectMuscle("大胸筋", 0);
     await inputRatio("100", 0);
   },
 };
@@ -116,10 +115,10 @@ export const 必須項目を入力: Story = {
 export const 必須項目を入力して登録: Story = {
   ...Default,
   play: async () => {
-    await openModal();
     await inputExercise("ベンチプレス");
-    await selectMuscle("muscle-1", 0);
+    await selectMuscle("大胸筋", 0);
     await inputRatio("100", 0);
+    await offFocus();
     await clickSubmitButton();
   },
 };
@@ -127,17 +126,16 @@ export const 必須項目を入力して登録: Story = {
 export const 部位の割合が不正な場合のエラー: Story = {
   ...Default,
   play: async () => {
-    await openModal();
-
     await inputExercise("ベンチプレス");
 
-    await selectMuscle("muscle-1", 0);
+    await selectMuscle("大胸筋", 0);
     await inputRatio("90", 0);
 
     await clickAddButton();
 
-    await selectMuscle("muscle-2", 1);
     await inputRatio("20", 1);
+
+    await offFocus();
 
     await clickSubmitButton();
   },
