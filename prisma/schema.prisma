@@ -9,6 +9,8 @@ datasource db {
   referentialIntegrity = "prisma"
 }
 
+// NextAuth用スキーマ
+
 model Account {
   id                 String  @id @default(cuid())
   userId             String
@@ -54,4 +56,12 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// アプリ用スキーマ
+
+model Trainee {
+  id String @id
+  name String
+  image String
 }

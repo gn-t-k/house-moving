@@ -3,6 +3,23 @@ import { User, UserID } from "@/features/user/user";
 import { createUser } from "@/libs/prisma/command/create-user";
 import { getUsers } from "@/libs/prisma/query/get-users";
 
+const handler: ApiHandler = async (req, res) => {
+  if (req.method === "GET") {
+    getHandler(req, res);
+  } else if (req.method === "POST") {
+    postHandler(req, res);
+  } else {
+    res.status(405).json({
+      isSuccess: false,
+      error: {
+        httpStatus: 405,
+        message: "method not allowed",
+      },
+    });
+  }
+};
+export default handler;
+
 export type GetHandler = ApiHandler<{}, {}, User[]>;
 const getHandler: GetHandler = async (_req, res) => {
   const result = await getUsers();
@@ -46,20 +63,3 @@ const postHandler: PostHandler = async (req, res) => {
     }
   }
 };
-
-const handler: ApiHandler = async (req, res) => {
-  if (req.method === "GET") {
-    getHandler(req, res);
-  } else if (req.method === "POST") {
-    postHandler(req, res);
-  } else {
-    res.status(405).json({
-      isSuccess: false,
-      error: {
-        httpStatus: 405,
-        message: "method not allowed",
-      },
-    });
-  }
-};
-export default handler;
