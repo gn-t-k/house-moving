@@ -4,19 +4,18 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ComponentProps, FC } from "react";
 import { Muscle } from "../muscle";
-import { RegisterMuscleModal } from "./register-muscle-form";
+import { RegisterMuscleForm } from "./register-muscle-form";
 
-type Meta = ComponentMeta<typeof RegisterMuscleModal>;
-type Props = ComponentProps<typeof RegisterMuscleModal>;
-type Story = ComponentStoryObj<typeof RegisterMuscleModal>;
+type Meta = ComponentMeta<typeof RegisterMuscleForm>;
+type Props = ComponentProps<typeof RegisterMuscleForm>;
+type Story = ComponentStoryObj<typeof RegisterMuscleForm>;
 
 const componentMeta: Meta = {
-  component: RegisterMuscleModal,
+  component: RegisterMuscleForm,
 };
 export default componentMeta;
 
 const Wrapper: FC<Partial<Props>> = (props) => {
-  const cancel = action("cancel");
   const registerMuscle = async (muscle: Muscle) => {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -31,12 +30,12 @@ const Wrapper: FC<Partial<Props>> = (props) => {
   };
 
   const args: Props = {
-    cancel: props.cancel ?? cancel,
-    registerMuscle: props.registerMuscle ?? registerMuscle,
-    isSameNameMuscleExist: props.isSameNameMuscleExist ?? isSameNameMuscleExist,
+    registerMuscleState: props.registerMuscleState ?? registerMuscle,
+    isSameNameMuscleExistState:
+      props.isSameNameMuscleExistState ?? isSameNameMuscleExist,
   };
 
-  return <RegisterMuscleModal {...args} />;
+  return <RegisterMuscleForm {...args} />;
 };
 
 const Template: Story = {
@@ -90,7 +89,7 @@ export const 部位がすでに登録されていた場合: Story = {
   render: () => {
     const isSameNameMuscleExist = async (_muscle: Muscle) => true;
 
-    return <Wrapper isSameNameMuscleExist={isSameNameMuscleExist} />;
+    return <Wrapper isSameNameMuscleExistState={isSameNameMuscleExist} />;
   },
   play: async () => {
     await inputMuscleName("大胸筋");

@@ -1,9 +1,10 @@
-import { useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ulid } from "ulid";
 import { Muscle } from "./muscle";
 import { useForm } from "@/ui/form/use-form";
+import { Async } from "@/util/async";
 import { Result } from "@/util/result";
+import { useAsync } from "@/util/use-async";
 
 export type MuscleField = {
   name: string;
@@ -14,64 +15,72 @@ export const defaultValues: MuscleField = {
 
 type UseMuscleForm = (_props: {
   defaultValues?: MuscleField;
-  registerMuscle: (_muscle: Muscle) => Promise<void>;
-  isSameNameMuscleExist: (_muscle: Muscle) => Promise<boolean>;
+  registerMuscle: (_muscle: Muscle) => Promise<Result<void>>;
+  getMuscleByName: (_name: string) => Promise<Result<Muscle | null>>;
 }) => {
   register: UseFormReturn<MuscleField>["register"];
   errors: UseFormReturn<MuscleField>["formState"]["errors"];
   isValid: boolean;
-  submit: () => Promise<Result<null>>;
+  submit: () => void;
+  submitState: Async<void>;
 };
 export const useMuscleForm: UseMuscleForm = (props) => {
   const {
     register,
     formState: { errors, isValid },
     handleSubmit,
-    getValues,
   } = useForm<MuscleField>({
     defaultValues: props.defaultValues ?? defaultValues,
     mode: "all",
   });
+  const [submitState, { start, done }] = useAsync<void>();
 
-  const submit = useCallback(async (): Promise<Result<null>> => {
-    const fieldValue = getValues();
+  const submit = handleSubmit(async (fieldValue) => {
+    start();
 
-    try {
-      const muscle: Muscle = {
-        id: ulid(),
-        name: fieldValue.name,
-      };
+    const { name } = fieldValue;
 
-      const isSameNameMuscleExist = await props.isSameNameMuscleExist(muscle);
-      if (isSameNameMuscleExist) {
-        throw new Error(`部位「${muscle.name}」はすでに登録されています`);
-      }
+    const getMuscleByNameResult = await props.getMuscleByName(name);
 
-      await handleSubmit(async () => {
-        await props.registerMuscle(muscle);
-      })();
-
-      return {
-        isSuccess: true,
-        data: null,
-      };
-    } catch (error) {
-      return {
+    if (!getMuscleByNameResult.isSuccess) {
+      done({
         isSuccess: false,
         error: {
-          message:
-            error instanceof Error
-              ? error.message
-              : "不明なエラーが発生しました",
+          message: "部位の登録に失敗しました",
         },
-      };
+      });
+
+      return;
     }
-  }, [getValues, handleSubmit, props]);
+
+    if (getMuscleByNameResult.data !== null) {
+      done({
+        isSuccess: false,
+        error: {
+          message: `部位${name}はすでに登録されています`,
+        },
+      });
+
+      return;
+    }
+
+    const registerMuscleResult = await props.registerMuscle({
+      id: ulid(),
+      name,
+    });
+
+    done(
+      registerMuscleResult.isSuccess
+        ? registerMuscleResult
+        : { isSuccess: false, error: { message: "部位の登録に失敗しました" } }
+    );
+  });
 
   return {
     register,
     errors,
     isValid,
     submit,
+    submitState,
   };
 };

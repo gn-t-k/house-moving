@@ -1,11 +1,3 @@
-type Data<T> = {
-  data: T;
-};
-type Error = {
-  error: {
-    message: string;
-  };
-};
 export type Result<T> =
   | ({
       isSuccess: true;
@@ -13,3 +5,13 @@ export type Result<T> =
   | ({
       isSuccess: false;
     } & Error);
+
+type Data<T> = {
+  data: T;
+};
+
+type Error = {
+  error: {
+    message: string;
+  };
+};

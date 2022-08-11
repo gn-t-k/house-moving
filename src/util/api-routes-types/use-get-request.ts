@@ -1,5 +1,6 @@
 import qs from "query-string";
-import useSWR, { SWRConfiguration } from "swr";
+import { useState } from "react";
+import useSWR, { SWRConfiguration, mutate } from "swr";
 import { isResult } from "./is-result";
 import type { GetReqQuery, GetResBody, Error } from "@/api-routes-types";
 
@@ -9,25 +10,33 @@ export const useGetRequest = <
   ResBody extends GetResBody[T]
 >(
   key: T,
-  {
-    query,
-    requestInit,
-    swrConfig,
-  }: {
+  query?: ReqQuery,
+  swrConfig?: SWRConfiguration
+): {
+  sendRequest: (_options: {
     query?: ReqQuery;
     requestInit?: RequestInit;
-    swrConfig?: SWRConfiguration;
-  } = {}
-): {
+  }) => void;
   isLoading: boolean;
   data: ResBody | null;
   error: Error["error"] | null;
 } => {
-  const url = query ? `${key}?${qs.stringify(query)}` : key;
+  const getURL = (query?: ReqQuery) =>
+    query ? `${key}?${qs.stringify(query)}` : key;
+  const [url, setURL] = useState<string>(getURL(query));
 
-  const { data, error } = useSWR<ResBody, Error["error"]>(
-    url,
-    async (): Promise<ResBody> => {
+  const { data, error } = useSWR<ResBody, Error["error"]>(url, null, swrConfig);
+
+  const sendRequest = (
+    options: {
+      query?: ReqQuery;
+      requestInit?: RequestInit;
+    } = {}
+  ) => {
+    const { query, requestInit } = options;
+    setURL(getURL(query));
+
+    mutate(url, async (): Promise<ResBody> => {
       const result = await fetch(url, requestInit).then((res) => res.json());
 
       if (isResult<ResBody>(result)) {
@@ -43,11 +52,11 @@ export const useGetRequest = <
         message: "something went wrong",
       };
       throw error;
-    },
-    swrConfig
-  );
+    });
+  };
 
   return {
+    sendRequest,
     isLoading: data === undefined && error === undefined,
     data: data ?? null,
     error: error ?? null,

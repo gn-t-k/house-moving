@@ -7,51 +7,49 @@ import {
   Input,
   useToast,
 } from "@chakra-ui/react";
-import { MouseEventHandler, FC, FormEventHandler, useState } from "react";
+import { FC, FormEventHandler, useEffect } from "react";
 import { Muscle } from "../muscle";
 import { useMuscleForm } from "../use-muscle-form";
+import { Result } from "@/util/result";
 
 type Props = {
-  cancel: () => void;
-  registerMuscle: (_muscle: Muscle) => Promise<void>;
-  isSameNameMuscleExist: (_muscle: Muscle) => Promise<boolean>;
+  registerMuscle: (_muscle: Muscle) => Promise<Result<void>>;
+  getMuscleByName: (_name: string) => Promise<Result<Muscle | null>>;
 };
-export const RegisterMuscleModal: FC<Props> = ({
-  cancel,
+export const RegisterMuscleForm: FC<Props> = ({
   registerMuscle,
-  isSameNameMuscleExist,
+  getMuscleByName,
 }) => {
-  const { register, errors, isValid, submit } = useMuscleForm({
+  const { register, errors, isValid, submit, submitState } = useMuscleForm({
     registerMuscle,
-    isSameNameMuscleExist,
+    getMuscleByName,
   });
   const toast = useToast();
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleCancel: MouseEventHandler<HTMLButtonElement> = (_e) => {
-    cancel();
-  };
+  useEffect(() => {
+    if (submitState.status !== "done") {
+      return;
+    }
+
+    toast(
+      submitState.isSuccess
+        ? {
+            title: "登録しました",
+            status: "success",
+            isClosable: true,
+          }
+        : {
+            title: submitState.error.message,
+            status: "error",
+            isClosable: true,
+          }
+    );
+  }, [submitState, toast]);
+
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
 
-    setIsLoading(true);
-    const result = await submit();
-    setIsLoading(false);
-
-    if (result.isSuccess) {
-      toast({
-        title: "登録しました",
-        status: "success",
-        isClosable: true,
-      });
-      cancel();
-    } else {
-      toast({
-        title: result.error.message,
-        status: "error",
-        isClosable: true,
-      });
-    }
+    submit();
   };
 
   return (
@@ -68,9 +66,8 @@ export const RegisterMuscleModal: FC<Props> = ({
         />
         <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
       </FormControl>
-      <Button onClick={handleCancel}>キャンセル</Button>
       <Button type="submit" isDisabled={!isValid}>
-        {isLoading ? <Spinner /> : "鍛えたい部位を登録"}
+        {submitState.status === "loading" ? <Spinner /> : "鍛えたい部位を登録"}
       </Button>
     </form>
   );

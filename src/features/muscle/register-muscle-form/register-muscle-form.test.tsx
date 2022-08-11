@@ -2,7 +2,7 @@ import { composeStories } from "@storybook/testing-react";
 import { render, screen } from "@testing-library/react";
 import * as stories from "./register-muscle-form.stories";
 
-describe("RegisterMuscleModal", () => {
+describe("RegisterMuscleForm", () => {
   const Stories = composeStories(stories);
 
   describe("初期状態", () => {
