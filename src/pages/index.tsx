@@ -1,3 +1,4 @@
+import { Spinner } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { AccountPage } from "@/features/account/account-page";
 import { useAuthState } from "@/features/auth/use-auth";
@@ -8,7 +9,7 @@ const Home: NextPage = () => {
   });
 
   if (auth.status !== "authenticated") {
-    return null;
+    return <Spinner />;
   }
 
   const { name, image } = auth.session;

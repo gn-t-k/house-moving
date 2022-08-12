@@ -1,63 +1,35 @@
-import type { ApiHandler } from "@/api-routes-types";
-import { Muscle } from "@/features/muscle/muscle";
-import { Trainee } from "@/features/trainee/trainee";
+import { NextApiHandler } from "next";
+import { isMuscle } from "@/features/muscle/muscle";
+import { isTrainee } from "@/features/trainee/trainee";
 import { insertMuscle } from "@/libs/prisma/command/insert-muscle";
 import { getMuscleByName } from "@/libs/prisma/query/get-muscle-by-name";
 
-const handler: ApiHandler = async (req, res) => {
-  if (req.method === "GET") {
-    getHandler(req, res);
-  } else if (req.method === "POST") {
-    postHandler(req, res);
-  } else {
-    res.status(405).json({
-      isSuccess: false,
-      error: {
-        httpStatus: 405,
-        message: "method not allowed",
-      },
-    });
-  }
+const switchHandler: NextApiHandler = async (req, res) => {
+  const handler: NextApiHandler =
+    req.method === "GET"
+      ? getHandler
+      : req.method === "POST"
+      ? postHandler
+      : (req, res) => {
+          res.status(405).json({
+            isSuccess: false,
+            error: {
+              httpStatus: 405,
+              message: "method not allowed",
+            },
+          });
+          console.error({ req, res });
+        };
+
+  handler(req, res);
 };
-export default handler;
+export default switchHandler;
 
-export type GetHandler = ApiHandler<{ name?: string }, {}, Muscle | null>;
-const getHandler: GetHandler = async (req, res) => {
-  if (req.query.name !== undefined) {
-    const getMuscleByNameResult = await getMuscleByName(req.query.name);
+const getHandler: NextApiHandler = async (req, res) => {
+  const name = req.query.name;
+  const isValidRequest = typeof name === "string";
 
-    if (getMuscleByNameResult.isSuccess) {
-      res.status(200).json({
-        isSuccess: true,
-        data: getMuscleByNameResult.data,
-      });
-    } else {
-      res.status(500).json({
-        ...getMuscleByNameResult,
-        error: {
-          ...getMuscleByNameResult.error,
-          httpStatus: 500,
-        },
-      });
-    }
-  } else {
-    res.status(405).json({
-      isSuccess: false,
-      error: {
-        httpStatus: 405,
-        message: "method not allowed",
-      },
-    });
-  }
-};
-
-export type PostHandler = ApiHandler<
-  {},
-  { trainee: Trainee; muscle: Muscle },
-  {}
->;
-const postHandler: PostHandler = async (req, res) => {
-  if (!req.body) {
+  if (!isValidRequest) {
     res.status(400).json({
       isSuccess: false,
       error: {
@@ -65,21 +37,67 @@ const postHandler: PostHandler = async (req, res) => {
         message: "invalid request",
       },
     });
-  } else {
-    const { trainee, muscle } = req.body;
+    console.error({ req, res });
 
-    const result = await insertMuscle(trainee, muscle);
-
-    if (result.isSuccess) {
-      res.status(200);
-    } else {
-      res.status(500).json({
-        ...result,
-        error: {
-          ...result.error,
-          httpStatus: 500,
-        },
-      });
-    }
+    return;
   }
+
+  const result = await getMuscleByName(name);
+
+  if (!result.isSuccess) {
+    res.status(500).json({
+      ...result,
+      error: {
+        ...result.error,
+        httpStatus: 500,
+      },
+    });
+    console.error({ req, res });
+
+    return;
+  }
+
+  res.status(200).json({
+    isSuccess: true,
+    data: result.data,
+  });
+};
+
+const postHandler: NextApiHandler = async (req, res) => {
+  const trainee = req.body?.trainee;
+  const muscle = req.body?.muscle;
+  const isValidRequest = isTrainee(trainee) && isMuscle(muscle);
+
+  if (!isValidRequest) {
+    res.status(400).json({
+      isSuccess: false,
+      error: {
+        httpStatus: 400,
+        message: "invalid request",
+      },
+    });
+    console.error({ req, res });
+
+    return;
+  }
+
+  const result = await insertMuscle(trainee, muscle);
+
+  if (!result.isSuccess) {
+    res.status(500).json({
+      ...result,
+      error: {
+        ...result.error,
+        httpStatus: 500,
+      },
+    });
+    console.error({ req, res });
+
+    return;
+  }
+
+  res.status(200).json({
+    isSuccess: true,
+    data: {},
+  });
 };

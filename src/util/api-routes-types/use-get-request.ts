@@ -37,7 +37,9 @@ export const useGetRequest = <
     setURL(getURL(query));
 
     mutate(url, async (): Promise<ResBody> => {
-      const result = await fetch(url, requestInit).then((res) => res.json());
+      const response = await fetch(url, requestInit);
+
+      const result = await response.json();
 
       if (isResult<ResBody>(result)) {
         if (result.isSuccess) {

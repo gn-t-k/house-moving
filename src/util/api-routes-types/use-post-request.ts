@@ -40,31 +40,36 @@ export const usePostRequest = <
       setData(null);
       setError(null);
 
-      const result = await fetch(url, {
-        ...requestInit,
-        method: "POST",
-        headers: { ...defaultHeaders, ...requestInit?.headers },
-        body: body ? JSON.stringify(body) : undefined,
-      })
-        .then((res) => {
-          if (isResult<ResBody>(result)) {
-            if (result.isSuccess) {
-              setData(result.data);
-            } else {
-              setError(result.error);
-            }
-          } else {
-            setError({
-              httpStatus: 500,
-              message: "something went wrong",
-            });
-          }
-
-          return res.json();
-        })
-        .finally(() => {
-          setIsLoading(false);
+      try {
+        const response = await fetch(url, {
+          ...requestInit,
+          method: "POST",
+          headers: { ...defaultHeaders, ...requestInit?.headers },
+          body: body ? JSON.stringify(body) : undefined,
         });
+
+        const result = await response.json();
+
+        if (isResult<ResBody>(result)) {
+          if (result.isSuccess) {
+            setData(result.data);
+          } else {
+            setError(result.error);
+          }
+        } else {
+          setError({
+            httpStatus: 500,
+            message: "something went wrong",
+          });
+        }
+      } catch (error) {
+        setError({
+          httpStatus: 500,
+          message: "something went wrong",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     },
     [key]
   );

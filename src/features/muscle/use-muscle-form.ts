@@ -57,7 +57,7 @@ export const useMuscleForm: UseMuscleForm = (props) => {
       done({
         isSuccess: false,
         error: {
-          message: `部位${name}はすでに登録されています`,
+          message: `部位「${name}」はすでに登録されています`,
         },
       });
 
