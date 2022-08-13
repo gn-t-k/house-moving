@@ -99,6 +99,7 @@ export const useExerciseForm: UseExerciseForm = (props) => {
 
   const targetIdList = useMemo(() => fields.map((field) => field.id), [fields]);
 
+  // TODO: 1つ目でAを選ぶ→2つ目でBを選ぶ→1つ目でBを選べないようにしたい
   const muscleOptions: Muscle[][] = useMemo(() => {
     const selectedMuscleIds = fields
       .map((field) => field.muscleId)
