@@ -17,10 +17,10 @@ export const getMuscleByName: GetMuscleByName = async (name) => {
       data:
         muscleInDB === null
           ? null
-          : {
+          : new Muscle({
               id: muscleInDB.id,
               name: muscleInDB.name,
-            },
+            }),
     };
   } catch (error) {
     return {

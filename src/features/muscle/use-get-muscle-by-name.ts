@@ -1,4 +1,4 @@
-import { Muscle, isMuscle } from "./muscle";
+import { Muscle } from "./muscle";
 import { Result, isResult } from "@/util/result";
 
 type GetMuscleByName = (_name: string) => Promise<Result<Muscle | null>>;
@@ -19,15 +19,25 @@ export const useGetMuscleByName: UseGetMuscleByName = () => {
         );
       }
 
-      if (!isMuscle(result.data) && result.data !== null) {
+      if (result.data === null) {
+        return {
+          isSuccess: true,
+          data: result.data,
+        };
+      }
+
+      const buildMuscleResult = Muscle.build(result.data);
+      if (!buildMuscleResult.isSuccess) {
         throw new Error(
           "取得した情報を正しく処理できませんでした。開発者にお問い合わせください。"
         );
       }
 
+      const muscle = buildMuscleResult.data;
+
       return {
         isSuccess: true,
-        data: result.data,
+        data: muscle,
       };
     } catch (error) {
       return {

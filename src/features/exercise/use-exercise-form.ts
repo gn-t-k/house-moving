@@ -27,7 +27,6 @@ export const defaultValues: ExerciseField = {
   memo: "",
 };
 
-// FIXME: 割合の合計が100じゃなかった場合をフォームエラーにしたい（現状Resultで返している）
 type UseExerciseForm = (_props: {
   defaultValues?: ExerciseField;
   muscles: Muscle[];

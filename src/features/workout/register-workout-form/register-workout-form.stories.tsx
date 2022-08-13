@@ -125,6 +125,8 @@ const Wrapper: FC<Partial<Props>> = (props) => {
     trainee: props.trainee ?? {
       id: "trainee",
       name: "太郎",
+      image:
+        "https://1.bp.blogspot.com/-BnPjHnaxR8Q/YEGP_e4vImI/AAAAAAABdco/2i7s2jl14xUhqtxlR2P3JIsFz76EDZv3gCNcBGAsYHQ/s400/buranko_boy_smile.png",
     },
     date: props.date ?? new Date(2022, 6, 19),
     redirectToEditPage: props.redirectToEditPage ?? redirectToEditPage,

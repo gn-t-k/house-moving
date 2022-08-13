@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { ComponentProps, FC } from "react";
 import { Muscle } from "../muscle";
 import { RegisterMuscleForm } from "./register-muscle-form";
+import { Result } from "@/util/result";
 
 type Meta = ComponentMeta<typeof RegisterMuscleForm>;
 type Props = ComponentProps<typeof RegisterMuscleForm>;
@@ -20,19 +21,30 @@ const Wrapper: FC<Partial<Props>> = (props) => {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     action("registerMuscle")(muscle);
+
+    const result: Result<void> = {
+      isSuccess: true,
+      data: void 0,
+    };
+
+    return result;
   };
-  const isSameNameMuscleExist = async (muscle: Muscle) => {
+  const getMuscleByName = async (name: string) => {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    action("isSameNameMuscleExist")(muscle);
+    action("isSameNameMuscleExist")(name);
 
-    return false;
+    const result: Result<Muscle | null> = {
+      isSuccess: true,
+      data: null,
+    };
+
+    return result;
   };
 
   const args: Props = {
-    registerMuscleState: props.registerMuscleState ?? registerMuscle,
-    isSameNameMuscleExistState:
-      props.isSameNameMuscleExistState ?? isSameNameMuscleExist,
+    registerMuscle: props.registerMuscle ?? registerMuscle,
+    getMuscleByName: props.getMuscleByName ?? getMuscleByName,
   };
 
   return <RegisterMuscleForm {...args} />;
@@ -87,9 +99,18 @@ export const 部位名を入力して消去: Story = {
 
 export const 部位がすでに登録されていた場合: Story = {
   render: () => {
-    const isSameNameMuscleExist = async (_muscle: Muscle) => true;
+    const getMuscleByName = async (name: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
-    return <Wrapper isSameNameMuscleExistState={isSameNameMuscleExist} />;
+      const result: Result<Muscle | null> = {
+        isSuccess: true,
+        data: new Muscle({ name }),
+      };
+
+      return result;
+    };
+
+    return <Wrapper {...{ getMuscleByName }} />;
   },
   play: async () => {
     await inputMuscleName("大胸筋");

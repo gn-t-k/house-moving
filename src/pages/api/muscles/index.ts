@@ -1,5 +1,5 @@
 import { NextApiHandler } from "next";
-import { isMuscle } from "@/features/muscle/muscle";
+import { Muscle } from "@/features/muscle/muscle";
 import { isTrainee } from "@/features/trainee/trainee";
 import { insertMuscle } from "@/libs/prisma/command/insert-muscle";
 import { getMuscleByName } from "@/libs/prisma/query/get-muscle-by-name";
@@ -66,7 +66,7 @@ const getHandler: NextApiHandler = async (req, res) => {
 const postHandler: NextApiHandler = async (req, res) => {
   const trainee = req.body?.trainee;
   const muscle = req.body?.muscle;
-  const isValidRequest = isTrainee(trainee) && isMuscle(muscle);
+  const isValidRequest = isTrainee(trainee) && Muscle.build(muscle).isSuccess;
 
   if (!isValidRequest) {
     res.status(400).json({
