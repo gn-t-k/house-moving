@@ -6,7 +6,7 @@ type Props = {
   userIcon: string;
   logout: () => Promise<void>;
 };
-export const AccountPage: FC<Props> = ({ userName, userIcon, logout }) => (
+export const TraineePage: FC<Props> = ({ userName, userIcon, logout }) => (
   <Stack direction="row">
     <Box>
       <Image borderRadius="full" src={userIcon} alt={userName} />

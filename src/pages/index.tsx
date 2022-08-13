@@ -1,7 +1,7 @@
 import { Spinner } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { AccountPage } from "@/features/account/account-page";
 import { useAuthState } from "@/features/auth/use-auth";
+import { TraineePage } from "@/features/trainee/trainee-page";
 
 const Home: NextPage = () => {
   const [auth, { logout }] = useAuthState({
@@ -15,7 +15,7 @@ const Home: NextPage = () => {
   const { name, image } = auth.session;
 
   return (
-    <AccountPage
+    <TraineePage
       userName={name}
       userIcon={image} // TODO: 画像のURL用意する
       logout={logout}

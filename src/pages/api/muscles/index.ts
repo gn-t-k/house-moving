@@ -4,7 +4,7 @@ import { isTrainee } from "@/features/trainee/trainee";
 import { insertMuscle } from "@/libs/prisma/command/insert-muscle";
 import { getMuscleByName } from "@/libs/prisma/query/get-muscle-by-name";
 
-const switchHandler: NextApiHandler = async (req, res) => {
+const muscleHandler: NextApiHandler = async (req, res) => {
   const handler: NextApiHandler =
     req.method === "GET"
       ? getHandler
@@ -23,7 +23,7 @@ const switchHandler: NextApiHandler = async (req, res) => {
 
   handler(req, res);
 };
-export default switchHandler;
+export default muscleHandler;
 
 const getHandler: NextApiHandler = async (req, res) => {
   const name = req.query.name;
