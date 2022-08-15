@@ -4,6 +4,7 @@ import { ulid } from "ulid";
 import { Muscle } from "../muscle/muscle";
 import { Exercise } from "./exercise";
 import { useForm } from "@/ui/form/use-form";
+import { hasAtLeastOne } from "@/util/has-at-least-one";
 import { Result } from "@/util/result";
 
 export type ExerciseField = {
@@ -63,18 +64,20 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     name: "targets",
   });
   const targets = watch("targets");
+  const ratios = targets.map((target) => target.ratio);
+  const muscleIds = targets.map((target) => target.muscleId);
 
-  const isRatio100 = (() => {
-    const ratioStrings = targets.map((target) => target.ratio);
-
-    if (ratioStrings.some((ratio) => !/^[0-9]+$/.test(ratio))) {
+  const isRatio100 = useMemo(() => {
+    if (ratios.some((ratio) => !/^[0-9]+$/.test(ratio))) {
       return false;
     }
 
-    const ratios = ratioStrings.map((ratioString) => parseInt(ratioString));
-
-    return ratios.reduce((acc, cur) => acc + cur) === 100;
-  })();
+    return (
+      ratios
+        .map((ratioString) => parseInt(ratioString))
+        .reduce((acc, cur) => acc + cur) === 100
+    );
+  }, [ratios]);
 
   useEffect(() => {
     if (touchedFields.targets === undefined) {
@@ -99,25 +102,26 @@ export const useExerciseForm: UseExerciseForm = (props) => {
 
   const targetIdList = useMemo(() => fields.map((field) => field.id), [fields]);
 
-  // TODO: 1つ目でAを選ぶ→2つ目でBを選ぶ→1つ目でBを選べないようにしたい
   const muscleOptions: Muscle[][] = useMemo(() => {
-    const selectedMuscleIds = fields
-      .map((field) => field.muscleId)
-      .filter((id) => id !== defaultTargetValues.muscleId);
+    const selectedMuscleIds = muscleIds.filter(
+      (id) => id !== defaultTargetValues.muscleId
+    );
 
-    return selectedMuscleIds.length === 0
-      ? [props.muscles]
-      : selectedMuscleIds.reduce(
-          (acc: Muscle[][], cur: string) => {
-            const prevOptions = acc.slice(-1)[0];
+    return hasAtLeastOne(selectedMuscleIds)
+      ? muscleIds.map((muscleId) => {
+          const selectableMuscles = props.muscles.filter(
+            (muscle) => !selectedMuscleIds.includes(muscle.id)
+          );
+          const currentSelectedMuscle = props.muscles.find(
+            (muscle) => muscle.id === muscleId
+          );
 
-            return prevOptions === undefined
-              ? [props.muscles]
-              : [...acc, prevOptions.filter((muscle) => muscle.id !== cur)];
-          },
-          [props.muscles]
-        );
-  }, [fields, props.muscles]);
+          return currentSelectedMuscle !== undefined
+            ? [currentSelectedMuscle, ...selectableMuscles]
+            : selectableMuscles;
+        })
+      : [props.muscles];
+  }, [muscleIds, props.muscles]);
 
   const appendTargetField = useCallback(() => {
     append(defaultTargetValues);

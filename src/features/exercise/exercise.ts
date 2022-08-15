@@ -1,6 +1,6 @@
 import { ulid } from "ulid";
 import { Muscle } from "../muscle/muscle";
-import { hasAtLeastOne } from "@/util/is-not-empty-array";
+import { hasAtLeastOne } from "@/util/has-at-least-one";
 
 export type Exercise = {
   id: string;

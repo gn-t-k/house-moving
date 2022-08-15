@@ -66,7 +66,10 @@ const selectMuscle = async (index: number, value: string) => {
   const muscleSelect = screen.getByRole("combobox", {
     name: `部位${index + 1}`,
   });
-  const muscleOption = screen.getByRole("option", { name: value });
+  const muscleOption = screen.getAllByRole("option", { name: value })[index];
+  if (muscleOption === undefined) {
+    throw new Error(`${index}番目、値「${value}」のoption要素が見つかりません`);
+  }
 
   await userEvent.selectOptions(muscleSelect, muscleOption);
 };
