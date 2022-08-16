@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";
-import { ulid } from "ulid";
 import { Muscle } from "../muscle/muscle";
-import { Exercise } from "./exercise";
+import { Exercise, Target } from "./exercise";
 import { useForm } from "@/ui/form/use-form";
 import { hasAtLeastOne } from "@/util/has-at-least-one";
 import { Result } from "@/util/result";
@@ -238,19 +237,18 @@ const toExercise: ToExercise = ({ fieldValue, muscles }) => {
     return muscle === undefined
       ? []
       : [
-          {
+          new Target({
             muscle,
             ratio: parseInt(target.ratio),
-          },
+          }),
         ];
   });
 
-  return {
-    id: ulid(),
+  return new Exercise({
     name: fieldValue.name,
     targets,
     memo: fieldValue.memo,
-  };
+  });
 };
 
 class ValidExerciseField {

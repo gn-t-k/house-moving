@@ -5,7 +5,9 @@ import userEvent from "@testing-library/user-event";
 import { ComponentProps, FC } from "react";
 import { Workout } from "../workout";
 import { RegisterWorkoutForm } from "./register-workout-form";
-import { Exercise } from "@/features/exercise/exercise";
+import { Exercise, Target } from "@/features/exercise/exercise";
+import { Muscle } from "@/features/muscle/muscle";
+import { Trainee } from "@/features/trainee/trainee";
 
 type Meta = ComponentMeta<typeof RegisterWorkoutForm>;
 type Props = ComponentProps<typeof RegisterWorkoutForm>;
@@ -17,98 +19,65 @@ const componentMeta: Meta = {
 export default componentMeta;
 
 const Wrapper: FC<Partial<Props>> = (props) => {
-  const exercises: Exercise[] = [
-    {
-      id: "exercise-1",
+  const exercises = [
+    new Exercise({
       name: "ベンチプレス",
       targets: [
-        {
-          muscle: {
-            id: "muscle-1",
-            name: "大胸筋",
-          },
-          ratio: 0.5,
-        },
-        {
-          muscle: {
-            id: "muscle-2",
-            name: "上腕三頭筋",
-          },
-          ratio: 0.3,
-        },
-        {
-          muscle: {
-            id: "muscle-3",
-            name: "三角筋前部",
-          },
-          ratio: 0.2,
-        },
+        new Target({
+          muscle: new Muscle({ name: "大胸筋" }),
+          ratio: 50,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "上腕三頭筋" }),
+          ratio: 30,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "三角筋前部" }),
+          ratio: 20,
+        }),
       ],
       memo: "",
-    },
-    {
-      id: "exercise-2",
+    }),
+    new Exercise({
       name: "スクワット",
       targets: [
-        {
-          muscle: {
-            id: "muscle-4",
-            name: "大腿四頭筋",
-          },
-          ratio: 0.5,
-        },
-        {
-          muscle: {
-            id: "muscle-5",
-            name: "ハムストリングス",
-          },
-          ratio: 0.3,
-        },
-        {
-          muscle: {
-            id: "muscle-6",
-            name: "カーフ",
-          },
-          ratio: 0.2,
-        },
+        new Target({
+          muscle: new Muscle({ name: "大腿四頭筋" }),
+          ratio: 50,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "ハムストリングス" }),
+          ratio: 30,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "カーフ" }),
+          ratio: 20,
+        }),
       ],
       memo: "",
-    },
-    {
-      id: "exercise-3",
+    }),
+    new Exercise({
       name: "デッドリフト",
       targets: [
-        {
-          muscle: {
-            id: "muscle-7",
-            name: "脊柱起立筋",
-          },
-          ratio: 0.4,
-        },
-        {
-          muscle: {
-            id: "muscle-5",
-            name: "ハムストリングス",
-          },
-          ratio: 0.2,
-        },
-        {
-          muscle: {
-            id: "muscle-8",
-            name: "僧帽筋",
-          },
-          ratio: 0.2,
-        },
-        {
-          muscle: {
-            id: "muscle-9",
-            name: "広背筋",
-          },
-          ratio: 0.2,
-        },
+        new Target({
+          muscle: new Muscle({ name: "脊柱起立筋" }),
+          ratio: 40,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "ハムストリングス" }),
+          ratio: 20,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "僧帽筋" }),
+          ratio: 20,
+        }),
+        new Target({
+          muscle: new Muscle({ name: "広背筋" }),
+          ratio: 20,
+        }),
       ],
       memo: "ナロー",
-    },
+    }),
   ];
   const registerWorkout = async (workout: Workout) => {
     await new Promise((resolve) => setTimeout(resolve, 200));
@@ -122,12 +91,14 @@ const Wrapper: FC<Partial<Props>> = (props) => {
   const args: Props = {
     exercises: props.exercises ?? exercises,
     registerWorkout: props.registerWorkout ?? registerWorkout,
-    trainee: props.trainee ?? {
-      id: "trainee",
-      name: "太郎",
-      image:
-        "https://1.bp.blogspot.com/-BnPjHnaxR8Q/YEGP_e4vImI/AAAAAAABdco/2i7s2jl14xUhqtxlR2P3JIsFz76EDZv3gCNcBGAsYHQ/s400/buranko_boy_smile.png",
-    },
+    trainee:
+      props.trainee ??
+      new Trainee({
+        id: "trainee",
+        name: "太郎",
+        image:
+          "https://1.bp.blogspot.com/-BnPjHnaxR8Q/YEGP_e4vImI/AAAAAAABdco/2i7s2jl14xUhqtxlR2P3JIsFz76EDZv3gCNcBGAsYHQ/s400/buranko_boy_smile.png",
+      }),
     date: props.date ?? new Date(2022, 6, 19),
     redirectToEditPage: props.redirectToEditPage ?? redirectToEditPage,
   };
@@ -143,7 +114,7 @@ export const Default: Story = {
   ...Template,
 };
 
-const selectExercise = async (value: string, index: number) => {
+const selectExercise = async (index: number, value: string) => {
   const exerciseSelect = screen.getByRole("combobox", {
     name: `種目${index + 1}`,
   });
@@ -152,7 +123,7 @@ const selectExercise = async (value: string, index: number) => {
   await userEvent.selectOptions(exerciseSelect, exerciseOption);
 };
 
-const inputWeight = async (value: string, index: number) => {
+const inputWeight = async (index: number, value: string) => {
   const weightInput = screen.getByRole("textbox", {
     name: `種目${index + 1}の重量`,
   });
@@ -160,7 +131,7 @@ const inputWeight = async (value: string, index: number) => {
   await userEvent.type(weightInput, value);
 };
 
-const inputRepetition = async (value: string, index: number) => {
+const inputRepetition = async (index: number, value: string) => {
   const repetitionInput = screen.getByRole("textbox", {
     name: `種目${index + 1}の回数`,
   });
@@ -177,18 +148,18 @@ const clickSubmitButton = async () => {
 export const 必須項目を入力: Story = {
   ...Default,
   play: async () => {
-    await selectExercise("ベンチプレス", 0);
-    await inputWeight("100", 0);
-    await inputRepetition("5", 0);
+    await selectExercise(0, "ベンチプレス");
+    await inputWeight(0, "100");
+    await inputRepetition(0, "5");
   },
 };
 
 export const 必須項目を入力してワークアウトを登録: Story = {
   ...Default,
   play: async () => {
-    await selectExercise("ベンチプレス", 0);
-    await inputWeight("100", 0);
-    await inputRepetition("5", 0);
+    await selectExercise(0, "ベンチプレス");
+    await inputWeight(0, "100");
+    await inputRepetition(0, "5");
     await clickSubmitButton();
   },
 };
@@ -196,7 +167,7 @@ export const 必須項目を入力してワークアウトを登録: Story = {
 export const 重量に不正な値を入力: Story = {
   ...Default,
   play: async () => {
-    await inputWeight("不正な値", 0);
+    await inputWeight(0, "不正な値");
   },
 };
 
@@ -209,9 +180,9 @@ export const 登録に失敗する場合: Story = {
     return <Wrapper registerWorkout={registerWorkout} />;
   },
   play: async () => {
-    await selectExercise("ベンチプレス", 0);
-    await inputWeight("100", 0);
-    await inputRepetition("5", 0);
+    await selectExercise(0, "ベンチプレス");
+    await inputWeight(0, "100");
+    await inputRepetition(0, "5");
     await clickSubmitButton();
   },
 };

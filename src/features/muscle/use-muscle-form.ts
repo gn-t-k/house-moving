@@ -1,5 +1,4 @@
 import { UseFormReturn } from "react-hook-form";
-import { ulid } from "ulid";
 import { Muscle } from "./muscle";
 import { useForm } from "@/ui/form/use-form";
 import { Async } from "@/util/async";
@@ -64,10 +63,9 @@ export const useMuscleForm: UseMuscleForm = (props) => {
       return;
     }
 
-    const registerMuscleResult = await props.registerMuscle({
-      id: ulid(),
-      name,
-    });
+    const registerMuscleResult = await props.registerMuscle(
+      new Muscle({ name })
+    );
 
     done(
       registerMuscleResult.isSuccess

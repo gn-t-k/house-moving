@@ -17,15 +17,21 @@ const RegisterMuscle: NextPage = () => {
   }
 
   const { session } = auth;
-  const trainee: Trainee = {
-    id: session.id,
-    name: session.name,
-    image: session.image,
-  };
 
-  const registerMuscle = registerMuscleHOF(trainee);
+  try {
+    const trainee = new Trainee({
+      id: session.id,
+      name: session.name,
+      image: session.image,
+    });
 
-  return <RegisterMuscleForm {...{ getMuscleByName, registerMuscle }} />;
+    const registerMuscle = registerMuscleHOF(trainee);
+
+    return <RegisterMuscleForm {...{ getMuscleByName, registerMuscle }} />;
+  } catch (error) {
+    // TODO
+    return <p>Sorry, something went wrong</p>;
+  }
 };
 
 export default RegisterMuscle;

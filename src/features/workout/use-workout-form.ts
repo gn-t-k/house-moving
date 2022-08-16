@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";
-import { ulid } from "ulid";
-import { Workout } from "./workout";
+import { Record, Workout } from "./workout";
 import { Exercise } from "@/features/exercise/exercise";
 import { Trainee } from "@/features/trainee/trainee";
 import { useForm } from "@/ui/form/use-form";
@@ -199,22 +198,21 @@ export const toWorkout: ToWorkout = async ({
       return exercise === undefined
         ? []
         : [
-            {
+            new Record({
               exercise,
               weight: parseInt(record.weight),
               repetition: parseInt(record.repetition),
-            },
+            }),
           ];
     })
   );
 
-  return {
-    id: ulid(),
+  return new Workout({
     trainee,
     records,
     date,
     memo: fieldValue.memo,
-  };
+  });
 };
 
 class ValidWorkoutField {

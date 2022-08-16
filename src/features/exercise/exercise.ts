@@ -2,19 +2,7 @@ import { ulid } from "ulid";
 import { Muscle } from "../muscle/muscle";
 import { hasAtLeastOne } from "@/util/has-at-least-one";
 
-export type Exercise = {
-  id: string;
-  name: string;
-  targets: Target[];
-  memo: string;
-};
-
-type Target = {
-  muscle: Muscle;
-  ratio: number;
-};
-
-export class ExerciseClass {
+export class Exercise {
   private _id: string;
   private _name: string;
   private _targets: [Target, ...Target[]];
@@ -69,7 +57,7 @@ export class ExerciseClass {
   }
 }
 
-export class TargetClass {
+export class Target {
   private _muscle: Muscle;
   private _ratio: number;
 

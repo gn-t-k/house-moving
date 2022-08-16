@@ -32,7 +32,8 @@ const auth = NextAuth({
     signIn: async ({ user }) => {
       const isValidUser = (
         value: unknown
-      ): value is Required<{ // userのプロパティからundefinedとnullを除いた型
+      ): value is Required<{
+        // userのプロパティからundefinedとnullを除いた型
         [Key in keyof typeof user]: NonNullable<typeof user[Key]>;
       }> => {
         const maybeUser = value as typeof user;
@@ -49,15 +50,19 @@ const auth = NextAuth({
       const isTraineeExist = getTraineeResult.isSuccess;
 
       if (!isTraineeExist) {
-        const trainee: Trainee = {
-          id: user.id,
-          name: user.name,
-          image: user.image,
-        };
+        try {
+          const trainee = new Trainee({
+            id: user.id,
+            name: user.name,
+            image: user.image,
+          });
 
-        const insertTraineeResult = await insertTrainee(trainee);
+          const insertTraineeResult = await insertTrainee(trainee);
 
-        return insertTraineeResult.isSuccess;
+          return insertTraineeResult.isSuccess;
+        } catch (error) {
+          return false;
+        }
       }
 
       return true;

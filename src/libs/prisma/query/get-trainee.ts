@@ -16,11 +16,11 @@ export const getTrainee: GetTrainee = async (id) => {
       throw new Error("trainee not found");
     }
 
-    const trainee: Trainee = {
+    const trainee = new Trainee({
       id: traineeInDB.id,
       name: traineeInDB.name,
       image: traineeInDB.image,
-    };
+    });
 
     return {
       isSuccess: true,
