@@ -25,7 +25,7 @@ export class Program {
     id?: string;
     name: string;
     contents: Content[];
-    memo?: string;
+    memo: string;
   }) {
     this._id = props.id ?? ulid();
 
@@ -36,7 +36,7 @@ export class Program {
     }
     this._contents = props.contents;
 
-    this._memo = props.memo ?? "";
+    this._memo = props.memo;
   }
 
   get id() {

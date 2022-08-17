@@ -15,7 +15,7 @@ export class Workout {
     trainee: Trainee;
     records: Record[];
     date: Date;
-    memo?: string;
+    memo: string;
   }) {
     this._id = props.id ?? ulid();
 
@@ -28,7 +28,7 @@ export class Workout {
 
     this._date = props.date;
 
-    this._memo = props.memo ?? "";
+    this._memo = props.memo;
   }
 
   get id() {

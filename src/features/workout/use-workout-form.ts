@@ -133,13 +133,36 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     const fieldValue = getValues();
 
     try {
-      const validFieldValue = new ValidWorkoutField(fieldValue);
+      const records = fieldValue.records.map((record, index) => {
+        const exercise = props.exercises.find(
+          (exercise) => exercise.id === record.exerciseId
+        );
+        if (exercise === undefined) {
+          throw new Error(`「種目${index}」の値が不正です`);
+        }
 
-      const workout = await toWorkout({
-        fieldValue: validFieldValue,
+        const weight = parseInt(record.weight);
+        if (weight === NaN) {
+          throw new Error(`「種目${index}の重量」の値が不正です`);
+        }
+
+        const repetition = parseInt(record.repetition);
+        if (repetition === NaN) {
+          throw new Error(`「種目${index}の回数」の値が不正です`);
+        }
+
+        return new Record({
+          exercise,
+          weight,
+          repetition,
+        });
+      });
+
+      const workout = new Workout({
         trainee: props.trainee,
+        records,
         date: props.date,
-        exercises: props.exercises,
+        memo: fieldValue.memo,
       });
 
       await handleSubmit(async () => {
@@ -176,77 +199,3 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
     submit,
   };
 };
-
-type ToWorkout = (_props: {
-  fieldValue: ValidWorkoutField;
-  trainee: Trainee;
-  date: Date;
-  exercises: Exercise[];
-}) => Promise<Workout>;
-export const toWorkout: ToWorkout = async ({
-  fieldValue,
-  trainee,
-  date,
-  exercises,
-}) => {
-  const records = await Promise.all(
-    fieldValue.records.flatMap((record) => {
-      const exercise = exercises.find(
-        (exercise) => exercise.id === record.exerciseId
-      );
-
-      return exercise === undefined
-        ? []
-        : [
-            new Record({
-              exercise,
-              weight: parseInt(record.weight),
-              repetition: parseInt(record.repetition),
-            }),
-          ];
-    })
-  );
-
-  return new Workout({
-    trainee,
-    records,
-    date,
-    memo: fieldValue.memo,
-  });
-};
-
-class ValidWorkoutField {
-  public records: WorkoutField["records"];
-  public memo: WorkoutField["memo"];
-
-  public constructor(props: WorkoutField) {
-    const isWeightNumericString = !props.records.some(
-      (record) => !/^[0-9]+$/.test(record.weight)
-    );
-    const isRepetitionNumericString = !props.records.some(
-      (record) => !/^[0-9]+$/.test(record.repetition)
-    );
-
-    if (!isWeightNumericString) {
-      throw new Error("重量に不正な値が設定されています");
-    }
-    if (!isRepetitionNumericString) {
-      throw new Error("回数に不正な値が設定されています");
-    }
-
-    const weights = props.records.map((record) => parseInt(record.weight));
-    const repetitions = props.records.map((record) =>
-      parseInt(record.repetition)
-    );
-
-    if (weights.some((weight) => weight < 0)) {
-      throw new Error("重量に負の値は設定できません");
-    }
-    if (repetitions.some((repetition) => repetition < 0)) {
-      throw new Error("回数に負の値は設定できません");
-    }
-
-    this.records = props.records;
-    this.memo = props.memo;
-  }
-}

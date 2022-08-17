@@ -177,11 +177,33 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     const fieldValue = getValues();
 
     try {
-      const validExerciseField = new ValidExerciseField(fieldValue);
+      const targets = fieldValue.targets.map((target, index) => {
+        const muscle = props.muscles.find(
+          (muscle) => muscle.id === target.muscleId
+        );
 
-      const exercise = toExercise({
-        fieldValue: validExerciseField,
-        muscles: props.muscles,
+        if (muscle === undefined) {
+          throw new Error(`「部位${index}」に不正な値が入力されています`);
+        }
+
+        const ratio = parseInt(target.ratio);
+
+        if (ratio === NaN) {
+          throw new Error(
+            `「種目における部位${index}の割合」に不正な値が入力されています`
+          );
+        }
+
+        return new Target({
+          muscle,
+          ratio,
+        });
+      });
+
+      const exercise = new Exercise({
+        name: fieldValue.name,
+        targets,
+        memo: fieldValue.memo,
       });
 
       const isSameNameExerciseExist = await props.isSameNameExerciseExist(
@@ -225,57 +247,3 @@ export const useExerciseForm: UseExerciseForm = (props) => {
     submit,
   };
 };
-
-type ToExercise = (_props: {
-  fieldValue: ValidExerciseField;
-  muscles: Muscle[];
-}) => Exercise;
-const toExercise: ToExercise = ({ fieldValue, muscles }) => {
-  const targets = fieldValue.targets.flatMap((target) => {
-    const muscle = muscles.find((muscle) => muscle.id === target.muscleId);
-
-    return muscle === undefined
-      ? []
-      : [
-          new Target({
-            muscle,
-            ratio: parseInt(target.ratio),
-          }),
-        ];
-  });
-
-  return new Exercise({
-    name: fieldValue.name,
-    targets,
-    memo: fieldValue.memo,
-  });
-};
-
-class ValidExerciseField {
-  public name: ExerciseField["name"];
-  public targets: ExerciseField["targets"];
-  public memo: ExerciseField["memo"];
-
-  public constructor(props: ExerciseField) {
-    const isEveryRatioNumericString = !props.targets.some(
-      (target) => !/^[0-9]+$/.test(target.ratio)
-    );
-
-    if (!isEveryRatioNumericString) {
-      throw new Error("割合に不正な値が設定されています");
-    }
-
-    const isRatioValid =
-      props.targets
-        .map((target) => parseInt(target.ratio))
-        .reduce((acc, cur) => acc + cur) === 100;
-
-    if (!isRatioValid) {
-      throw new Error("割合の合計値が100%になっていません");
-    }
-
-    this.name = props.name;
-    this.targets = props.targets;
-    this.memo = props.memo;
-  }
-}

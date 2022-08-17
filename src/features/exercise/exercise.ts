@@ -12,7 +12,7 @@ export class Exercise {
     id?: string;
     name: string;
     targets: Target[];
-    memo?: string;
+    memo: string;
   }) {
     this._id = props.id ?? ulid();
 
@@ -37,7 +37,7 @@ export class Exercise {
     }
     this._targets = props.targets;
 
-    this._memo = props.memo ?? "";
+    this._memo = props.memo;
   }
 
   get id() {
