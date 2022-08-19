@@ -42,12 +42,7 @@ export const useMuscleForm: UseMuscleForm = (props) => {
     const getMuscleByNameResult = await props.getMuscleByName(name);
 
     if (!getMuscleByNameResult.isSuccess) {
-      done({
-        isSuccess: false,
-        error: {
-          message: "部位の登録に失敗しました",
-        },
-      });
+      done(getMuscleByNameResult);
 
       return;
     }
@@ -63,15 +58,18 @@ export const useMuscleForm: UseMuscleForm = (props) => {
       return;
     }
 
+    const buildMuscleResult = Muscle.build({ name });
+    if (!buildMuscleResult.isSuccess) {
+      done(buildMuscleResult);
+
+      return;
+    }
+
     const registerMuscleResult = await props.registerMuscle(
-      new Muscle({ name })
+      buildMuscleResult.data
     );
 
-    done(
-      registerMuscleResult.isSuccess
-        ? registerMuscleResult
-        : { isSuccess: false, error: { message: "部位の登録に失敗しました" } }
-    );
+    done(registerMuscleResult);
   });
 
   return {

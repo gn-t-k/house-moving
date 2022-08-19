@@ -12,15 +12,25 @@ export const getMuscleByName: GetMuscleByName = async (name) => {
       },
     });
 
+    if (muscleInDB === null) {
+      return {
+        isSuccess: true,
+        data: null,
+      };
+    }
+
+    const buildMuscleResult = Muscle.build({
+      id: muscleInDB.id,
+      name: muscleInDB.name,
+    });
+
+    if (!buildMuscleResult.isSuccess) {
+      throw new Error(buildMuscleResult.error.message);
+    }
+
     return {
       isSuccess: true,
-      data:
-        muscleInDB === null
-          ? null
-          : new Muscle({
-              id: muscleInDB.id,
-              name: muscleInDB.name,
-            }),
+      data: buildMuscleResult.data,
     };
   } catch (error) {
     return {

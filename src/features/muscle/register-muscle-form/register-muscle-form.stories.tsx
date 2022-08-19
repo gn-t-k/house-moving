@@ -58,6 +58,16 @@ export const Default: Story = {
   ...Template,
 };
 
+const buildMuscle = (name: string) => {
+  const buildMuscleResult = Muscle.build({ name });
+
+  if (!buildMuscleResult.isSuccess) {
+    throw new Error(buildMuscleResult.error.message);
+  }
+
+  return buildMuscleResult.data;
+};
+
 const inputMuscleName = async (value: string) => {
   const muscleNameInput = screen.getByRole("textbox", { name: "部位名" });
 
@@ -104,7 +114,7 @@ export const 部位がすでに登録されていた場合: Story = {
 
       const result: Result<Muscle | null> = {
         isSuccess: true,
-        data: new Muscle({ name }),
+        data: buildMuscle(name),
       };
 
       return result;

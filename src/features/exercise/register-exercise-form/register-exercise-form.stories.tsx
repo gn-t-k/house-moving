@@ -18,18 +18,9 @@ export default componentMeta;
 
 const Wrapper: FC<Partial<Props>> = (props) => {
   const muscles: Muscle[] = [
-    new Muscle({
-      id: "muscle-1",
-      name: "大胸筋",
-    }),
-    new Muscle({
-      id: "muscle-2",
-      name: "上腕三頭筋",
-    }),
-    new Muscle({
-      id: "muscle-3",
-      name: "三角筋前部",
-    }),
+    buildMuscle("大胸筋"),
+    buildMuscle("上腕三頭筋"),
+    buildMuscle("三角筋前部"),
   ];
   const registerExercise = async (exercise: Exercise) => {
     await new Promise((resolve) => setTimeout(resolve, 200));
@@ -54,6 +45,16 @@ const Wrapper: FC<Partial<Props>> = (props) => {
   };
 
   return <RegisterExerciseForm {...args} />;
+};
+
+const buildMuscle = (name: string) => {
+  const buildMuscleResult = Muscle.build({ name });
+
+  if (!buildMuscleResult.isSuccess) {
+    throw new Error(buildMuscleResult.error.message);
+  }
+
+  return buildMuscleResult.data;
 };
 
 const inputExercise = async (value: string) => {

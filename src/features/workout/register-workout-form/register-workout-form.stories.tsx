@@ -24,15 +24,15 @@ const Wrapper: FC<Partial<Props>> = (props) => {
       name: "ベンチプレス",
       targets: [
         new Target({
-          muscle: new Muscle({ name: "大胸筋" }),
+          muscle: buildMuscle("大胸筋"),
           ratio: 50,
         }),
         new Target({
-          muscle: new Muscle({ name: "上腕三頭筋" }),
+          muscle: buildMuscle("上腕三頭筋"),
           ratio: 30,
         }),
         new Target({
-          muscle: new Muscle({ name: "三角筋前部" }),
+          muscle: buildMuscle("三角筋前部"),
           ratio: 20,
         }),
       ],
@@ -42,15 +42,15 @@ const Wrapper: FC<Partial<Props>> = (props) => {
       name: "スクワット",
       targets: [
         new Target({
-          muscle: new Muscle({ name: "大腿四頭筋" }),
+          muscle: buildMuscle("大腿四頭筋"),
           ratio: 50,
         }),
         new Target({
-          muscle: new Muscle({ name: "ハムストリングス" }),
+          muscle: buildMuscle("ハムストリングス"),
           ratio: 30,
         }),
         new Target({
-          muscle: new Muscle({ name: "カーフ" }),
+          muscle: buildMuscle("カーフ"),
           ratio: 20,
         }),
       ],
@@ -60,19 +60,19 @@ const Wrapper: FC<Partial<Props>> = (props) => {
       name: "デッドリフト",
       targets: [
         new Target({
-          muscle: new Muscle({ name: "脊柱起立筋" }),
+          muscle: buildMuscle("脊柱起立筋"),
           ratio: 40,
         }),
         new Target({
-          muscle: new Muscle({ name: "ハムストリングス" }),
+          muscle: buildMuscle("ハムストリングス"),
           ratio: 20,
         }),
         new Target({
-          muscle: new Muscle({ name: "僧帽筋" }),
+          muscle: buildMuscle("僧帽筋"),
           ratio: 20,
         }),
         new Target({
-          muscle: new Muscle({ name: "広背筋" }),
+          muscle: buildMuscle("広背筋"),
           ratio: 20,
         }),
       ],
@@ -112,6 +112,16 @@ const Template: Story = {
 
 export const Default: Story = {
   ...Template,
+};
+
+const buildMuscle = (name: string) => {
+  const buildMuscleResult = Muscle.build({ name });
+
+  if (!buildMuscleResult.isSuccess) {
+    throw new Error(buildMuscleResult.error.message);
+  }
+
+  return buildMuscleResult.data;
 };
 
 const selectExercise = async (index: number, value: string) => {

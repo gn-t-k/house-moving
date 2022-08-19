@@ -5,12 +5,40 @@ export class Muscle {
   private _id: string;
   private _name: string;
 
-  public constructor(props: { id?: string; name: string }) {
-    this._id = props.id ?? ulid();
+  private constructor(props: { id: string; name: string }) {
+    this._id = props.id;
+
+    if (props.name === "") {
+      throw new Error(errorMessages.emptyName);
+    }
     this._name = props.name;
   }
 
-  public static build = (value: unknown): Result<Muscle> => {
+  public static build = (props: {
+    id?: string;
+    name: string;
+  }): Result<Muscle> => {
+    try {
+      const id = props.id ?? ulid();
+
+      const muscle = new Muscle({ id, name: props.name });
+
+      return {
+        isSuccess: true,
+        data: muscle,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : errorMessages.buildFailed,
+        },
+      };
+    }
+  };
+
+  public static reconstruct = (value: unknown): Result<Muscle> => {
     const props = value as {
       id: string;
       name: string;
@@ -53,5 +81,6 @@ export class Muscle {
 }
 
 export const errorMessages = {
+  emptyName: "emptyName",
   buildFailed: "buildFailed",
 } as const;

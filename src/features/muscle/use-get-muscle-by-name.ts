@@ -26,7 +26,7 @@ export const useGetMuscleByName: UseGetMuscleByName = () => {
         };
       }
 
-      const buildMuscleResult = Muscle.build(result.data);
+      const buildMuscleResult = Muscle.reconstruct(result.data);
       if (!buildMuscleResult.isSuccess) {
         throw new Error(
           "取得した情報を正しく処理できませんでした。開発者にお問い合わせください。"

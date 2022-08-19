@@ -67,7 +67,7 @@ const postHandler: NextApiHandler = async (req, res) => {
   const trainee = req.body?.trainee;
   const muscle = req.body?.muscle;
   const isValidRequest =
-    Trainee.build(trainee).isSuccess && Muscle.build(muscle).isSuccess;
+    Trainee.build(trainee).isSuccess && Muscle.reconstruct(muscle).isSuccess;
 
   if (!isValidRequest) {
     res.status(400).json({
