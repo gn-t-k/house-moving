@@ -50,19 +50,20 @@ const auth = NextAuth({
       const isTraineeExist = getTraineeResult.isSuccess;
 
       if (!isTraineeExist) {
-        try {
-          const trainee = new Trainee({
-            id: user.id,
-            name: user.name,
-            image: user.image,
-          });
-
-          const insertTraineeResult = await insertTrainee(trainee);
-
-          return insertTraineeResult.isSuccess;
-        } catch (error) {
+        const buildTraineeResult = Trainee.reconstruct({
+          id: user.id,
+          name: user.name,
+          image: user.image,
+        });
+        if (!buildTraineeResult.isSuccess) {
           return false;
         }
+
+        const trainee = buildTraineeResult.data;
+
+        const insertTraineeResult = await insertTrainee(trainee);
+
+        return insertTraineeResult.isSuccess;
       }
 
       return true;

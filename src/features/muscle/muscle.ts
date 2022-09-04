@@ -14,14 +14,9 @@ export class Muscle {
     this._name = props.name;
   }
 
-  public static build = (props: {
-    id?: string;
-    name: string;
-  }): Result<Muscle> => {
+  public static build = (props: { name: string }): Result<Muscle> => {
     try {
-      const id = props.id ?? ulid();
-
-      const muscle = new Muscle({ id, name: props.name });
+      const muscle = new Muscle({ id: ulid(), name: props.name });
 
       return {
         isSuccess: true,

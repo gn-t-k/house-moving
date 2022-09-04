@@ -1,6 +1,7 @@
 import { ulid } from "ulid";
 import { Muscle } from "../muscle/muscle";
 import { hasAtLeastOne } from "@/util/has-at-least-one";
+import { Result } from "@/util/result";
 
 export class Exercise {
   private _id: string;
@@ -8,13 +9,13 @@ export class Exercise {
   private _targets: [Target, ...Target[]];
   private _memo: string;
 
-  public constructor(props: {
-    id?: string;
+  private constructor(props: {
+    id: string;
     name: string;
     targets: Target[];
     memo: string;
   }) {
-    this._id = props.id ?? ulid();
+    this._id = props.id;
 
     this._name = props.name;
 
@@ -40,6 +41,34 @@ export class Exercise {
     this._memo = props.memo;
   }
 
+  public static build = (props: {
+    name: string;
+    targets: Target[];
+    memo: string;
+  }): Result<Exercise> => {
+    try {
+      const exercise = new Exercise({
+        id: ulid(),
+        name: props.name,
+        targets: props.targets,
+        memo: props.memo,
+      });
+
+      return {
+        isSuccess: true,
+        data: exercise,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : errorMessages.buildFailed,
+        },
+      };
+    }
+  };
+
   get id() {
     return this._id;
   }
@@ -61,7 +90,7 @@ export class Target {
   private _muscle: Muscle;
   private _ratio: number;
 
-  public constructor(props: { muscle: Muscle; ratio: number }) {
+  private constructor(props: { muscle: Muscle; ratio: number }) {
     this._muscle = props.muscle;
 
     if (props.ratio < 0) {
@@ -69,6 +98,31 @@ export class Target {
     }
     this._ratio = props.ratio;
   }
+
+  public static build = (props: {
+    muscle: Muscle;
+    ratio: number;
+  }): Result<Target> => {
+    try {
+      const target = new Target({
+        muscle: props.muscle,
+        ratio: props.ratio,
+      });
+
+      return {
+        isSuccess: true,
+        data: target,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : errorMessages.buildFailed,
+        },
+      };
+    }
+  };
 
   get muscle() {
     return this._muscle;
@@ -84,4 +138,5 @@ export const errorMessages = {
   duplicatedTarget: "duplicatedTarget",
   invalidTotalRatio: "invalidTotalRatio",
   invalidRatio: "invalidRatio",
+  buildFailed: "buildFailed",
 } as const;

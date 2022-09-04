@@ -130,41 +130,72 @@ export const useWorkoutForm: UseWorkoutForm = (props) => {
   );
 
   const submit = useCallback(async (): Promise<Result<null>> => {
+    const errorMessages: string[] = [];
     const fieldValue = getValues();
 
+    const records = fieldValue.records.flatMap((record, index) => {
+      const exercise = props.exercises.find(
+        (exercise) => exercise.id === record.exerciseId
+      );
+      if (exercise === undefined) {
+        errorMessages.push(`「種目${index}」の値が不正です`);
+
+        return [];
+      }
+
+      const weight = parseInt(record.weight);
+      if (weight === NaN) {
+        errorMessages.push(`「種目${index}の重量」の値が不正です`);
+
+        return [];
+      }
+
+      const repetition = parseInt(record.repetition);
+      if (repetition === NaN) {
+        errorMessages.push(`「種目${index}の回数」の値が不正です`);
+
+        return [];
+      }
+
+      const buildRecordResult = Record.build({
+        exercise,
+        weight,
+        repetition,
+      });
+      if (!buildRecordResult.isSuccess) {
+        errorMessages.push(buildRecordResult.error.message);
+
+        return [];
+      }
+
+      return [buildRecordResult.data];
+    });
+    const isRecordsErrorExist = fieldValue.records.length !== records.length;
+    if (isRecordsErrorExist) {
+      return {
+        isSuccess: false,
+        error: {
+          message: errorMessages.join(", "),
+        },
+      };
+    }
+
+    const buildWorkoutResult = Workout.build({
+      trainee: props.trainee,
+      records,
+      date: props.date,
+      memo: fieldValue.memo,
+    });
+    if (!buildWorkoutResult.isSuccess) {
+      return {
+        isSuccess: false,
+        error: buildWorkoutResult.error,
+      };
+    }
+
+    const workout = buildWorkoutResult.data;
+
     try {
-      const records = fieldValue.records.map((record, index) => {
-        const exercise = props.exercises.find(
-          (exercise) => exercise.id === record.exerciseId
-        );
-        if (exercise === undefined) {
-          throw new Error(`「種目${index}」の値が不正です`);
-        }
-
-        const weight = parseInt(record.weight);
-        if (weight === NaN) {
-          throw new Error(`「種目${index}の重量」の値が不正です`);
-        }
-
-        const repetition = parseInt(record.repetition);
-        if (repetition === NaN) {
-          throw new Error(`「種目${index}の回数」の値が不正です`);
-        }
-
-        return new Record({
-          exercise,
-          weight,
-          repetition,
-        });
-      });
-
-      const workout = new Workout({
-        trainee: props.trainee,
-        records,
-        date: props.date,
-        memo: fieldValue.memo,
-      });
-
       await handleSubmit(async () => {
         await props.registerWorkout(workout);
       })();

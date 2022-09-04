@@ -18,20 +18,21 @@ const RegisterMuscle: NextPage = () => {
 
   const { session } = auth;
 
-  try {
-    const trainee = new Trainee({
-      id: session.id,
-      name: session.name,
-      image: session.image,
-    });
-
-    const registerMuscle = registerMuscleHOF(trainee);
-
-    return <RegisterMuscleForm {...{ getMuscleByName, registerMuscle }} />;
-  } catch (error) {
+  const buildTraineeResult = Trainee.reconstruct({
+    id: session.id,
+    name: session.name,
+    image: session.image,
+  });
+  if (!buildTraineeResult.isSuccess) {
     // TODO
     return <p>Sorry, something went wrong</p>;
   }
+
+  const trainee = buildTraineeResult.data;
+
+  const registerMuscle = registerMuscleHOF(trainee);
+
+  return <RegisterMuscleForm {...{ getMuscleByName, registerMuscle }} />;
 };
 
 export default RegisterMuscle;

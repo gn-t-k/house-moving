@@ -1,6 +1,7 @@
 import { ulid } from "ulid";
 import { Exercise } from "../exercise/exercise";
 import { hasAtLeastOne } from "@/util/has-at-least-one";
+import { Result } from "@/util/result";
 
 export type Programs = {
   id: string;
@@ -21,13 +22,13 @@ export class Program {
   private _contents: Content[];
   private _memo: string;
 
-  public constructor(props: {
-    id?: string;
+  private constructor(props: {
+    id: string;
     name: string;
     contents: Content[];
     memo: string;
   }) {
-    this._id = props.id ?? ulid();
+    this._id = props.id;
 
     this._name = props.name;
 
@@ -38,6 +39,34 @@ export class Program {
 
     this._memo = props.memo;
   }
+
+  public static build = (props: {
+    name: string;
+    contents: Content[];
+    memo: string;
+  }): Result<Program> => {
+    try {
+      const program = new Program({
+        id: ulid(),
+        name: props.name,
+        contents: props.contents,
+        memo: props.memo,
+      });
+
+      return {
+        isSuccess: true,
+        data: program,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : errorMessages.buildFailed,
+        },
+      };
+    }
+  };
 
   get id() {
     return this._id;
@@ -96,4 +125,5 @@ const errorMessages = {
   emptyContents: "emptyContents",
   invalidRepetition: "invalidRepetition",
   invalidSet: "invalidSet",
+  buildFailed: "buildFailed",
 } as const;

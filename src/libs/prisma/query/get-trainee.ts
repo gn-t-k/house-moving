@@ -16,11 +16,16 @@ export const getTrainee: GetTrainee = async (id) => {
       throw new Error("trainee not found");
     }
 
-    const trainee = new Trainee({
+    const buildTraineeResult = Trainee.reconstruct({
       id: traineeInDB.id,
       name: traineeInDB.name,
       image: traineeInDB.image,
     });
+    if (!buildTraineeResult.isSuccess) {
+      throw new Error(buildTraineeResult.error.message);
+    }
+
+    const trainee = buildTraineeResult.data;
 
     return {
       isSuccess: true,

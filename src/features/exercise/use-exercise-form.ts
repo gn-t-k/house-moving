@@ -174,43 +174,73 @@ export const useExerciseForm: UseExerciseForm = (props) => {
   ]);
 
   const submit = useCallback(async (): Promise<Result<null>> => {
+    const errorMessages: string[] = [];
     const fieldValue = getValues();
+    const targets = fieldValue.targets.flatMap((target, index) => {
+      const muscle = props.muscles.find(
+        (muscle) => muscle.id === target.muscleId
+      );
+      if (muscle === undefined) {
+        errorMessages.push(`「種目${index}」に不正な値が入力されています`);
+        return [];
+      }
+
+      const ratio = parseInt(target.ratio);
+      if (ratio === NaN) {
+        errorMessages.push(
+          `「種目${index}における割合」に不正な値が入力されています`
+        );
+        return [];
+      }
+
+      const buildTargetResult = Target.build({
+        muscle,
+        ratio,
+      });
+      if (!buildTargetResult.isSuccess) {
+        errorMessages.push(buildTargetResult.error.message);
+        return [];
+      }
+
+      return [buildTargetResult.data];
+    });
+    const isTargetsErrorExist = fieldValue.targets.length !== targets.length;
+    if (isTargetsErrorExist) {
+      return {
+        isSuccess: false,
+        error: {
+          message: errorMessages.join(", "),
+        },
+      };
+    }
+
+    const buildExerciseResult = Exercise.build({
+      name: fieldValue.name,
+      targets,
+      memo: fieldValue.memo,
+    });
+    if (!buildExerciseResult.isSuccess) {
+      return {
+        isSuccess: false,
+        error: {
+          message: buildExerciseResult.error.message,
+        },
+      };
+    }
+
+    const exercise = buildExerciseResult.data;
 
     try {
-      const targets = fieldValue.targets.map((target, index) => {
-        const muscle = props.muscles.find(
-          (muscle) => muscle.id === target.muscleId
-        );
-
-        if (muscle === undefined) {
-          throw new Error(`「部位${index}」に不正な値が入力されています`);
-        }
-
-        const ratio = parseInt(target.ratio);
-
-        if (ratio === NaN) {
-          throw new Error(
-            `「種目における部位${index}の割合」に不正な値が入力されています`
-          );
-        }
-
-        return new Target({
-          muscle,
-          ratio,
-        });
-      });
-
-      const exercise = new Exercise({
-        name: fieldValue.name,
-        targets,
-        memo: fieldValue.memo,
-      });
-
       const isSameNameExerciseExist = await props.isSameNameExerciseExist(
         exercise
       );
       if (isSameNameExerciseExist) {
-        throw new Error(`種目「${exercise.name}」はすでに登録されています`);
+        return {
+          isSuccess: false,
+          error: {
+            message: `種目「${exercise.name}」はすでに登録されています`,
+          },
+        };
       }
 
       await handleSubmit(async () => {

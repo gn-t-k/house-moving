@@ -20,58 +20,58 @@ export default componentMeta;
 
 const Wrapper: FC<Partial<Props>> = (props) => {
   const exercises = [
-    new Exercise({
+    buildExercise({
       name: "ベンチプレス",
       targets: [
-        new Target({
+        buildTarget({
           muscle: buildMuscle("大胸筋"),
           ratio: 50,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("上腕三頭筋"),
           ratio: 30,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("三角筋前部"),
           ratio: 20,
         }),
       ],
       memo: "",
     }),
-    new Exercise({
+    buildExercise({
       name: "スクワット",
       targets: [
-        new Target({
+        buildTarget({
           muscle: buildMuscle("大腿四頭筋"),
           ratio: 50,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("ハムストリングス"),
           ratio: 30,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("カーフ"),
           ratio: 20,
         }),
       ],
       memo: "",
     }),
-    new Exercise({
+    buildExercise({
       name: "デッドリフト",
       targets: [
-        new Target({
+        buildTarget({
           muscle: buildMuscle("脊柱起立筋"),
           ratio: 40,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("ハムストリングス"),
           ratio: 20,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("僧帽筋"),
           ratio: 20,
         }),
-        new Target({
+        buildTarget({
           muscle: buildMuscle("広背筋"),
           ratio: 20,
         }),
@@ -93,7 +93,7 @@ const Wrapper: FC<Partial<Props>> = (props) => {
     registerWorkout: props.registerWorkout ?? registerWorkout,
     trainee:
       props.trainee ??
-      new Trainee({
+      buildTrainee({
         id: "trainee",
         name: "太郎",
         image:
@@ -122,6 +122,51 @@ const buildMuscle = (name: string) => {
   }
 
   return buildMuscleResult.data;
+};
+
+const buildExercise = (props: {
+  name: string;
+  targets: Target[];
+  memo: string;
+}) => {
+  const buildExerciseResult = Exercise.build({
+    name: props.name,
+    targets: props.targets,
+    memo: props.memo,
+  });
+
+  if (!buildExerciseResult.isSuccess) {
+    throw new Error(buildExerciseResult.error.message);
+  }
+
+  return buildExerciseResult.data;
+};
+
+const buildTrainee = (props: { id: string; name: string; image: string }) => {
+  const buildTraineeResult = Trainee.reconstruct({
+    id: props.id,
+    name: props.name,
+    image: props.image,
+  });
+
+  if (!buildTraineeResult.isSuccess) {
+    throw new Error(buildTraineeResult.error.message);
+  }
+
+  return buildTraineeResult.data;
+};
+
+const buildTarget = (props: { muscle: Muscle; ratio: number }) => {
+  const buildTargetResult = Target.build({
+    muscle: props.muscle,
+    ratio: props.ratio,
+  });
+
+  if (!buildTargetResult.isSuccess) {
+    throw new Error(buildTargetResult.error.message);
+  }
+
+  return buildTargetResult.data;
 };
 
 const selectExercise = async (index: number, value: string) => {

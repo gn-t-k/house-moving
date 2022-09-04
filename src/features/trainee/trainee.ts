@@ -5,13 +5,13 @@ export class Trainee {
   private _name: string;
   private _image: string;
 
-  public constructor(props: { id: string; name: string; image: string }) {
+  private constructor(props: { id: string; name: string; image: string }) {
     this._id = props.id;
     this._name = props.name;
     this._image = props.image;
   }
 
-  public static build = (value: unknown): Result<Trainee> => {
+  public static reconstruct = (value: unknown): Result<Trainee> => {
     const props = value as {
       id: string;
       name: string;

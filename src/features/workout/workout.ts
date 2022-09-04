@@ -2,6 +2,7 @@ import { ulid } from "ulid";
 import { Exercise } from "../exercise/exercise";
 import { Trainee } from "../trainee/trainee";
 import { hasAtLeastOne } from "@/util/has-at-least-one";
+import { Result } from "@/util/result";
 
 export class Workout {
   private _id: string;
@@ -10,14 +11,14 @@ export class Workout {
   private _date: Date;
   private _memo: string;
 
-  public constructor(props: {
-    id?: string;
+  private constructor(props: {
+    id: string;
     trainee: Trainee;
     records: Record[];
     date: Date;
     memo: string;
   }) {
-    this._id = props.id ?? ulid();
+    this._id = props.id;
 
     this._trainee = props.trainee;
 
@@ -30,6 +31,36 @@ export class Workout {
 
     this._memo = props.memo;
   }
+
+  public static build = (props: {
+    trainee: Trainee;
+    records: Record[];
+    date: Date;
+    memo: string;
+  }): Result<Workout> => {
+    try {
+      const workout = new Workout({
+        id: ulid(),
+        trainee: props.trainee,
+        records: props.records,
+        date: props.date,
+        memo: props.memo,
+      });
+
+      return {
+        isSuccess: true,
+        data: workout,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : errorMessages.buildFailed,
+        },
+      };
+    }
+  };
 
   get id() {
     return this._id;
@@ -57,7 +88,7 @@ export class Record {
   private _weight: number;
   private _repetition: number;
 
-  public constructor(props: {
+  private constructor(props: {
     exercise: Exercise;
     weight: number;
     repetition: number;
@@ -74,6 +105,33 @@ export class Record {
     }
     this._repetition = props.repetition;
   }
+
+  public static build = (props: {
+    exercise: Exercise;
+    weight: number;
+    repetition: number;
+  }): Result<Record> => {
+    try {
+      const record = new Record({
+        exercise: props.exercise,
+        weight: props.weight,
+        repetition: props.repetition,
+      });
+
+      return {
+        isSuccess: true,
+        data: record,
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : errorMessages.buildFailed,
+        },
+      };
+    }
+  };
 
   get exercise() {
     return this._exercise;
@@ -92,4 +150,5 @@ const errorMessages = {
   emptyRecords: "emptyRecords",
   invalidWeight: "invalidWeight",
   invalidRepetition: "invalidRepetition",
+  buildFailed: "buildFailed",
 } as const;
